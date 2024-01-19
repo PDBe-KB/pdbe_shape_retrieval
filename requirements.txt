@@ -1,0 +1,6 @@
+xmltodict
+gemmi
+xmlschema
+jsonschema
+lxml
+pandas
