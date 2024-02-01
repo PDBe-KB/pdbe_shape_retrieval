@@ -1,56 +1,33 @@
-# Assembly interfaces analysis 
+# Shape retrieval of protein surfaces 
 
 ## Basic information
 
-This python package works with PISA-Lite to analyze data for macromolecular interfaces and interactions in assemblies.
+This Python package calculates 3D shape descriptors from triangulated molecular surface meshes to analyse protein structure similarity. 
 
-The code consists of two separate modules : `pisa_analysis` and `covariations_int` .
+The code is based on pyFM modules and will:
 
-pisa_analysis will:
+- Process triangulated meshes for protein surfaces
+- Calculate 3D Shape descriptors: Wave Kernel Signatures and Heat Kernel Signatures 
+- Compute functional maps and refine methods (Zoomout and ICP )
+- Compute shape distance matrices 
 
-- Analyses macromolecular interfaces with PISA
-- Creates a JSON dictionary with assembly interactions/interfaces information
-
-covariations_int will :
-
-- Adds covariation data to interface contacts 
-- Creates a CSV file with covariation data for assembly interfaces
-
+To install the module ```shape_retrieval``` :
 ```
-git clone https://github.com/PDBe-KB/pisa-analysis
+git clone https://github.com/PDBe-KB/pdbe_shape-retrieval
 
-cd pisa-analysis 
+cd pdbe_shape-retrieval
+
+python setup.py install
+
 ``` 
 ## Dependencies 
 
-The pisa_analysis process runs PISA-Lite as a subprocess and requires apriori compilation of PISA.
-
-To make your life easier when running the process, you can set two path environment variables for PISA:
-
-An environment variable to the `pisa` binary:
-
-```
-export PATH="$PATH:your_path_to_pisa/pisa-lite/build"
-```
-
-A path to the setup directory of PISA:
-
-```
-export PISA_SETUP_DIR="/your_path_to_pisa/pisa-lite/setup"
-```
-
-Additionally, it is required that PISA setup directory contains a pisa configuration template named [pisa_cfg_tmp](https://github.com/PDBe-KB/pisa-analysis/blob/main/pisa_cfg_tmp)
-
-```
-cp pisa_cfg_tmp your_path_to_pisa/pisa-lite/setup
-```
-
-Other dependencies can be installed with:
+Dependencies can be installed with:
 
 ```
 pip install -r requirements.txt
 ```
-See  [requirements.txt](https://github.com/PDBe-KB/pisa-analysis/blob/main/requirements.txt)
+See  [requirements.txt](https://github.com/PDBe-KB/pdbe_shape-retrieval/blob/main/requirements.txt)
 
 
 For development: 
@@ -66,36 +43,35 @@ pre-commit install
 
 ## Usage
 
-Follow below steps to install the modules **pisa_analysis** and **covariations_int** :
+Follow below steps to install the modules **pdbe_shape-retrieval** 
 
 ```
-cd pisa-analysis/
+cd pdbe_shape-retrieval/
 
-python install .
+python setup.py install .
 
 ```
 
 To run the modules in command line:
 
-**pisa_analysis**: 
+**pdbe_shape-retrieval**: 
 
 ```
-python pisa-analysis/pisa_utils/run.py [-h] -i INPUT_CIF_FILE --pdb_id PDB_ID --assembly_id ASSEMBLY_CODE -o OUTPUT_DIR_JSON --output_xml OUTPUT_DIR_XML
+python pdbe_shape-retrieval/shape_utils/run.py [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_MESH_2 -o PATH_TO_OUTPUT_DIR
 ```
 OR 
 
 ```
-pisa_analysis [-h] -i INPUT_CIF_FILE --pdb_id PDB_ID --assembly_id ASSEMBLY_CODE -o OUTPUT_PATH_JSON --output_xml OUTPUT_DIR_XML
+shape_retrieval [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_MESH_2 -o PATH_TO_OUTPUT_DIR
+
 ```
 
 Required arguments are :
 
 ```
---input_cif (-i)          :  Assembly CIF file (It can also read a PDB file)
---pdb_id                  :  Entry ID    
---assembly_id             :  Assembly code
---output_json (-o)        :  Output directory for JSON fille
---output_xml              :  Output directory for XML files
+--input_mesh1             :  Triangulated mesh for structure 1 (.off)
+--input_mesh2             :  Triangulated mesh for structure 2 (.off)    
+--output (-o)             :  Output directory
 ```
 
 
@@ -108,127 +84,13 @@ Other optional arguments are:
 --pisa_binary             : Binary file for PISA-lite
 ```
 
-**covariations_int** 
-
-usage:
-
-```
-python pisa-analysis/pisa_utils/covariations_int.py [-h] --input_json INPUT_JSON_FILE --input_cov INPUT_CSV_FILE -o OUTPUT_DIR
-```
-
-OR
-
-```
-covariations_int [-h] --input_json INPUT_JSON_FILE --input_cov INPUT_CSV_FILE -o OUTPUT_DIR
-```
-
-Required arguments are :
-
-```
---input_json              :  JSON file (output of pisa_analysis) with assembly interfaces information
---input_cov               :  CSV file with covariation pairs for UniProt accession    
---output_csv (-o)         :  Output CSV file with covariation information for interfaces contacts 
-```
-
-
-The process is as follows:
-
-For **pisa_analysis** module:
-
-1. The process first runs PISA-Lite in a subprocess and generates two xml files:
-   - interfaces.xml
-   - assembly.xml
-   
-   The xml files are saved in the output directory defined by the --`output_xml` argument. If the xml files exist and are valid, the process will skip running PISA-Lite unless the `--force` is used in the arguments. 
-
-2. Next, the process parses xml files generated by PISA-Lite and creates a dictionary that contains all assembly interfaces/interactions information. 
-
-3. While creating the interfaces dictionary for the entry, the process reads UniProt accession and sequence numbers from an Updated CIF file using Gemmi. 
-
-4. The process also parses xml file `assembly.xml` generated by PISA-Lite and creates a simplified dictionary with some assembly information. 
-
-4. In the last steps, the process dumps the dictionaries into JSON files. The JSON files are saved in the output directory defined by the `-o` or `--output_json` arguments. The output json files are:
-  
-     *xxx-assemX_interfaces.json*  and  *xxx-assemblyX.json*
-  
-     where xxx is the pdb id entry and X is the assembly code. 
-
-
-## Expected JSON files
-
-Documentation on the assembly interfaces json file and schema can be found here: 
-
-https://pisalite.docs.apiary.io/#reference/0/pisaqualifierjson/interaction-interface-data-per-pdb-assembly-entry
-
-The simplified assembly json output looks as follows:
-```
-{
-   "PISA": {
-      "pdb_id": "1d2s", 
-      "assembly_id": "1", 
-      "pisa_version": "2.0", 
-      "assembly": {
-         "id": "1", 
-         "size": "8", 
-         "macromolecular_size": "2", 
-         "dissociation_energy": -3.96, 
-         "accessible_surface_area": 15146.45, 
-         "buried_surface_area": 3156.79, 
-         "entropy": 12.09, 
-         "dissociation_area": 733.07, 
-         "solvation_energy_gain": -41.09, 
-         "number_of_uc": "0", 
-         "number_of_dissociated_elements": "2", 
-         "symmetry_number": "2", 
-         "formula": "A(2)a(4)b(2)", 
-         "composition": "A-2A[CA](4)[DHT](2)"
-      }
-   }
-}
-```
-
-For the **covariation_int** module:
-
-1. The process first loads the json file with assembly interfaces dictionaries (output from pisa_analysis module). The file is provided as input with `--input_json`:
-   
-    *xxx-assemX_interfaces.json*  
-  
-    where xxx is the pdb id entry and X is the assembly code. This file is the output of `pisa_analysis` module.  
-    
-2. The process will read a CSV file with covariation pairs information (scores and probabilities), for the corresponding UniProt accession. This file is an input `--input_cov`, and it is a file created with [covariation_pairs](https://github.com/PDBe-KB/covariation_pairs) module  :
-   
-    XXXX_cov.csv
-    
-    where XXXX is the UniProt accession
-3. The process will then read the interfaces dictionaries and make a list of UniProt sequence numbers and accessions as well as residues for assembly interfaces contacs.  
-
-4. Next, the process will identify if interfaces contacts are in the data frame of covariation pairs. 
-
-5. Finally, the process will create a data frame with a list of interfaces contacts and covariation information (for pairs with probability > 0.5). The data frame will be saved as a CSV file in the directory defined by `--output_csv` (-o):
-
-   PDBID_interfaces_cov.csv
-   
-   where PDBID is the entry or pdb ID for the assembly analysed. 
-
-The CSV file with covariation data for assembly interfaces looks as follows:
-
-
-```
-uniprot_accession_a,uniprot_residue_index_a,residue_label_a,uniprot_accession_b,uniprot_residue_index_b,residue_label_b,contact,interface,covariation_score,covariation_probability
-111,F5HCH8,LEU,87,F5HCH8,ARG,other_bonds,1,-0.0045671,0.645476
-111,F5HCH8,LEU,87,F5HCH8,ARG,other_bonds,1,-0.0045671,0.645476
-159,F5HCP3,CYS,100,F5HCP3,VAL,hydrogen_bonds,6,-0.00117549,0.576407
-44,F5HCH8,THR,182,F5HCH8,GLU,cov_bonds,1,-0.00250218,0.655191
-```   
-
 ## Versioning
 
 We use [SemVer](https://semver.org) for versioning.
 
 ## Authors
 * [Grisell Diaz Leines](https://github.com/grisell) - Lead developer
-* [Stephen Anyango](otienoanyango) - Review and productionising
-* [Mihaly Varadi](https://github.com/mvaradi) - Review and management 
+* [Sreenath ](otienoanyango) - Review and productionising
 
 See all contributors [here](https://github.com/PDBe-KB/pisa-analysis/graphs/contributors).
 
