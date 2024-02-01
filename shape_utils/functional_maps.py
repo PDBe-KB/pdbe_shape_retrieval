@@ -5,6 +5,7 @@ from shape_utils.pyFM_pdbe import functional
 #from shape_utils.pyhks.trimesh import save_off
 #import argparse
 import logging
+import seaborn as sns
 #import os 
 #import pandas as pd
 #from pandas import DataFrame
@@ -30,6 +31,7 @@ def calculate_functional_maps(model,n_cpus=1, refine='zoomout'):
         refine (str) : Selected method to refine functional map                                                                                                                                                           
 
     """   
+    print('cpus used', n_cpus)
     fit_params = {
         'w_descr': 1e0,
         'w_lap': 1e-2,
@@ -56,12 +58,15 @@ def calculate_functional_maps(model,n_cpus=1, refine='zoomout'):
         #double_plot(mesh1,mesh2,cmap1,cmap2)
         #return p2p_21_zo, p2p_21
 
+    print(' Calculating shape distance matrix')
     model.compute_SD()
-    D_area = model.D_a
-    D_conformal = model.D_c
+    #D_area = model.D_a
+    #D_conformal = model.D_c
+    #print(D_area)
+    #print(D_conformal)
+    #sns.heatmap(D_conformal)
+    return model.D_a, model.D_c, p2p_21
 
-    print(D_conformal)
-    
 def compute_shape_difference(model):
     """
     Save the mesh as a .off file using a divergent colormap of wks siganute
