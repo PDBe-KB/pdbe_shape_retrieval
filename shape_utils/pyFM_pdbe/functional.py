@@ -232,7 +232,7 @@ class FunctionalMapping:
         # Compute descriptors
         if descr_type == 'HKS':
             #if landmarks is None:
-            print('GDL:we are here')
+            
             inputs_mesh_HKS = [(self.mesh1,n_descr,landmarks,self.k1),(self.mesh2, n_descr,landmarks,self.k2)]
             with Pool() as pool:
                 results_HKS=pool.starmap(sg.mesh_HKS,inputs_mesh_HKS)
