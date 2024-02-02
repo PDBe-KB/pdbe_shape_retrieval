@@ -1,4 +1,4 @@
-# Shape retrieval of protein surfaces 
+# Shape retrieval for protein surfaces 
 
 ## Basic information
 
@@ -78,10 +78,13 @@ Required arguments are :
 Other optional arguments are:
 
 ```
---input_updated_cif       : Updated cif for pdbid entry 
---force                   : Always runs PISA-Lite calculation
---pisa_setup_dir          : Path to the 'setup' directory in PISA-lite
---pisa_binary             : Binary file for PISA-lite
+--neigvecs      : No. of eigenvalues/eigenvectors to process (>100). A minimum of neigvecs=100 will be automatically set 
+--n_ev          : The least number of Laplacian eigenvalues to consider for functional map.
+--ndescr        : No. of descriptors to process (WKS/HKS).
+--landmarks     : Input indices of landmarks
+--step          : Subsample step in order not to use too many descriptors.
+--descr         : Type of descriptor to calculate:WKS,HKS,Zernike
+--n_cpus        : Number of threads to be used for this calculation.
 ```
 
 ## Versioning
