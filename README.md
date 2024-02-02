@@ -4,7 +4,7 @@
 
 This Python package calculates 3D shape descriptors for triangulated molecular surface meshes to analyse protein structure similarity. 
 
-The code is based on pyFM modules and will:
+The code is based on [pyFM](https://github.com/RobinMagnet/pyFM) modules and will:
 
 - Process triangulated meshes for protein surfaces
 - Calculate 3D Shape descriptors: Wave Kernel Signatures and Heat Kernel Signatures 
