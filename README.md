@@ -2,7 +2,7 @@
 
 ## Basic information
 
-This Python package calculates 3D shape descriptors from triangulated molecular surface meshes to analyse protein structure similarity. 
+This Python package calculates 3D shape descriptors for triangulated molecular surface meshes to analyse protein structure similarity. 
 
 The code is based on pyFM modules and will:
 
