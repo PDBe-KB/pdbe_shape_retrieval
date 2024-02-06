@@ -1,6 +1,7 @@
-xmltodict
-gemmi
-xmlschema
-jsonschema
-lxml
+numpy
 pandas
+matplotlib
+seaborn
+spicy
+tqdm
+scikit-learn
