@@ -5,3 +5,5 @@ seaborn
 spicy
 tqdm
 scikit-learn
+potpourri3d
+robust_laplacian
