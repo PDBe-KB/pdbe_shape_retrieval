@@ -2,7 +2,7 @@ import numpy as np
 from tqdm.auto import tqdm
 import scipy.sparse
 
-import pyFM.spectral as spectral
+import shape_utils.pyFM_pdbe.spectral as spectral
 
 
 def zoomout_iteration(FM_12, evects1, evects2, step=1, A2=None, use_ANN=False, n_jobs=1):
