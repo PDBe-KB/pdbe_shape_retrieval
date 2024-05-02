@@ -41,6 +41,7 @@ def calculate_functional_maps(model,n_cpus=1, refine='zoomout'):
 
     model.fit(**fit_params, verbose=True)
     p2p_21 = model.get_p2p(n_jobs=4)
+
     #cmap1 = visu(mesh1.vertlist); cmap2 = cmap1[p2p_21]
 
     #refine model using ICP or Zoom
@@ -65,7 +66,7 @@ def calculate_functional_maps(model,n_cpus=1, refine='zoomout'):
     #print(D_area)
     #print(D_conformal)
     #sns.heatmap(D_conformal)
-    return model.D_a, model.D_c, p2p_21
+    return model.D_a, model.D_c, p2p_21, model.FM
 
 def compute_shape_difference(model):
     """
