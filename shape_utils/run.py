@@ -148,7 +148,7 @@ def main():
         save_list_to_csv(data3,output_file_3)
 
         #compute shape difference matrix and p2p21                                                                                          
-        D_a, D_c, p2p21 = calculate_functional_maps(model,args.n_cpus,refine=None)
+        D_a, D_c, p2p21, FM = calculate_functional_maps(model,args.n_cpus,refine=None)
 
         
     elif args.descr =='3DZD':

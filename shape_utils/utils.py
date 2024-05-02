@@ -3,6 +3,8 @@ import os
 import pandas as pd
 from pandas import DataFrame
 import numpy as np
+import vedo as vp
+import pymeshfix 
 
 logger = logging.getLogger()
 
@@ -59,4 +61,11 @@ def save_list_to_csv(data, output_file):
     else:
         logging.info(f"No data found to save")
 
-        return None        
+        return None
+
+def clean_mesh(mesh_file):
+    vedo_mesh = vp.load(mesh_file)
+    v, f = vedo_mesh.points(), np.asarray(vedo_mesh.faces())
+    meshfix = pymeshfix.MeshFix(v, f)
+    meshfix.repair()
+    return vp.Mesh([meshfix.v, meshfix.f])
