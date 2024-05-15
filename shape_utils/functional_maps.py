@@ -1,14 +1,8 @@
 import numpy as np
-#import matplotlib.pyplot as plt
-#from shape_utils.pyFM_pdbe.mesh import TriMesh
 from shape_utils.pyFM_pdbe import functional 
-#from shape_utils.pyhks.trimesh import save_off
-#import argparse
 import logging
 import seaborn as sns
-#import os 
-#import pandas as pd
-#from pandas import DataFrame
+
 
 
 logger = logging.getLogger()
@@ -18,7 +12,7 @@ def visu(vertices):
     cmap = (vertices-min_coord)/(max_coord-min_coord)
     return cmap
 
-def calculate_functional_maps(model,n_cpus=1, refine='zoomout'):
+def calculate_functional_maps(model,n_cpus = 1, refine= None):
     """                                                                                                                                                                                
     Calculate functional maps with pyFM code (https://github.com/RobinMagnet/pyFM)                                                                                                                                        
                                                                                                                                                                                        
@@ -39,34 +33,31 @@ def calculate_functional_maps(model,n_cpus=1, refine='zoomout'):
         'w_orient': 0
     }
 
+    logging.info(f"Computing correspondance matrix ")
     model.fit(**fit_params, verbose=True)
-    p2p_21 = model.get_p2p(n_jobs=4)
 
-    #cmap1 = visu(mesh1.vertlist); cmap2 = cmap1[p2p_21]
-
+    if refine is None :
+        logging.info(f"Computing point to point map using correspondance matrix")
+        p2p_21 = model.get_p2p(n_jobs=n_cpus)
+        #model.compute_SD()
     #refine model using ICP or Zoom
     if refine == 'icp':
+        model.change_FM_type('classic')
         model.icp_refine(n_jobs=n_cpus,verbose=True)
-        #p2p_21_icp = model.get_p2p(n_jobs=n_cpus)
-        #cmap1 = visu(mesh1.vertlist); cmap2 = cmap1[p2p_21_icp]
-        #double_plot(mesh1,mesh2,cmap1,cmap2)
-        #return p2p_21_icp, p2p_21
+        p2p_21 = model.get_p2p(n_jobs=n_cpus)
+        #model.compute_SD()
+        
     if refine == 'zoomout':
         model.change_FM_type('classic') # We refine the first computed map, not the icp-refined one
         model.zoomout_refine(nit=11, step = 1,n_jobs=n_cpus,verbose=True)
-        #p2p_21_zo = model.get_p2p(n_jobs=n_cpus)
-        #cmap1 = visu(mesh1.vertlist); cmap2 = cmap1[p2p_21_zo]
-        #double_plot(mesh1,mesh2,cmap1,cmap2)
-        #return p2p_21_zo, p2p_21
+        p2p_21 = model.get_p2p(n_jobs=n_cpus)
+        #model.compute_SD()
 
     print(' Calculating shape distance matrix')
-    model.compute_SD()
-    #D_area = model.D_a
-    #D_conformal = model.D_c
-    #print(D_area)
-    #print(D_conformal)
-    #sns.heatmap(D_conformal)
-    return model.D_a, model.D_c, p2p_21, model.FM
+    
+    #return model.D_a, model.D_c, p2p_21, model.FM
+    return p2p_21, model.FM
+
 
 def compute_shape_difference(model):
     """

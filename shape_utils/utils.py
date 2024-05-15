@@ -8,7 +8,7 @@ import pymeshfix
 
 logger = logging.getLogger()
 
-def save_spectral_descr_to_csv(data, output_file):
+def save_data_to_csv(data, output_file):
     """Dump WKS or HKS descriptors into a output file.                                                                                                                   
         Args:
             data (dict): The data (for spectral descriptors) to be dumped.                                                                        

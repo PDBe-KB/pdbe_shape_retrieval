@@ -31,7 +31,7 @@ def get_inv(obj_file,fileid,map3dz_binary, obj2grid_binary,output_dir):
     os.system(cp_command)
 
     grid_command = obj2grid_binary+' '+'-g 64  ./' + fileid + '.obj'
-    print(grid_command)
+    #print(grid_command)
     os.system(grid_command)
     
     inv_command =  map3dz_binary +' '+ fileid + '.obj.grid -c 0.5 '#--save-moments'
