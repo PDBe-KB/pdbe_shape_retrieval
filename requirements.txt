@@ -7,3 +7,5 @@ tqdm
 scikit-learn
 potpourri3d
 robust_laplacian
+pymeshfix 
+vedo
