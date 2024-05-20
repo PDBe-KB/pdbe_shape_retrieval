@@ -122,46 +122,54 @@ def main():
 
         #ouput files with descriptors and parameters list for structure 1 and structure 2
 
-        param_list_file = "{}_list.csv".format(parameter_descr)
+        param_list_file = "{}_{}_{}_list.csv".format(parameter_descr,args.descr,pdb_id_1,args.descr,pdb_id_2)
         descr1_file = "{}_descr_{}.csv".format(args.descr,pdb_id_1)
         descr2_file = "{}_descr_{}.csv".format(args.descr,pdb_id_2)
-
-        logging.info(f"Calculating {args.descr} descriptors for structures {pdb_id_1} and {pdb_id_2}")
-        
-        model = functional.FunctionalMapping(mesh1,mesh2)
-        descr1,descr2,paramlist = calculate_descriptors(model,args.neigvecs,args.n_ev,args.ndescr,args.step,args.landmarks,args.output,args.descr)
-        
-        data1 = np.array(descr1)
-        data2 = np.array(descr2)
-        data3 = np.array(paramlist)
 
         output_file_1 = os.path.join(args.output,descr1_file)
         output_file_2 = os.path.join(args.output,descr2_file)
         output_file_3 = os.path.join(args.output,param_list_file)
-        
-        #save descriptors
-        save_data_to_csv(data1,output_file_1)
-        save_data_to_csv(data2,output_file_2)
 
-        #save parameters list
-        save_list_to_csv(data3,output_file_3)
+        logging.info(f"Calculating {args.descr} descriptors for structures {pdb_id_1} and {pdb_id_2}")
+
+        model = functional.FunctionalMapping(mesh1,mesh2)
+
+        if not os.path.exists(output_file_1) or not os.path.exists(output_file_2):
+            
+            descr1,descr2,paramlist = calculate_descriptors(model,args.neigvecs,args.n_ev,args.ndescr,args.step,args.landmarks,args.output,args.descr)
+        
+            data1 = np.array(descr1)
+            data2 = np.array(descr2)
+            data3 = np.array(paramlist)
+        
+            #save descriptors
+            save_data_to_csv(data1,output_file_1)
+            save_data_to_csv(data2,output_file_2)
+
+            #save parameters list
+            save_list_to_csv(data3,output_file_3)
 
 
-        #compute correspondance matrix, shape difference matrix and p2p21                                                                                          
-        p2p21, FM = calculate_functional_maps(model,args.n_cpus,refine = args.refine)
-        
-        score_geodesic_norm_eigenvalues = calculate_geodesic_norm_score(FM)
-        
         FM_file = "{}_{}_FM.csv".format(pdb_id_1,pdb_id_2)
         output_FM = os.path.join(args.output,FM_file)
         
         p2p21_file = "{}_{}_p2p21.csv".format(pdb_id_1,pdb_id_2)
         output_p2p21 = os.path.join(args.output, p2p21_file)
-        #save descriptors
-        save_data_to_csv(FM,output_FM)
-        save_list_to_csv(p2p21,output_p2p21)
 
-        print('Disimilarity score is:',score_geodesic_norm_eigenvalues)
+        #compute correspondance matrix, shape difference matrix and p2p21         
+        
+        if not os.path.exists(output_FM) or not os.path.exists(output_p2p21):
+
+            p2p21, FM = calculate_functional_maps(model,args.n_cpus,refine = args.refine)
+        
+            score_geodesic_norm_eigenvalues = calculate_geodesic_norm_score(FM)
+        
+
+            #save descriptors
+            save_data_to_csv(FM,output_FM)
+            save_list_to_csv(p2p21,output_p2p21)
+
+            print('Disimilarity score is:',score_geodesic_norm_eigenvalues)
         
     elif args.descr =='3DZD':
 
