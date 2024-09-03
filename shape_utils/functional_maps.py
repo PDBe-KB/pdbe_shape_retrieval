@@ -8,13 +8,14 @@ import seaborn as sns
 logger = logging.getLogger()
 
 def visu(vertices):
+    
     min_coord,max_coord = np.min(vertices,axis=0,keepdims=True),np.max(vertices,axis=0,keepdims=True)
     cmap = (vertices-min_coord)/(max_coord-min_coord)
     return cmap
 
 def calculate_functional_maps(model,n_cpus = 1, refine= None):
     """                                                                                                                                                                                
-    Calculate functional maps with pyFM code (https://github.com/RobinMagnet/pyFM)                                                                                                                                        
+    Calculate functional maps and point to point maps with pyFM code (https://github.com/RobinMagnet/pyFM)                                                                                                                                        
                                                                                                                                                                                        
     Returns functional maps and fitted model   
 
@@ -23,7 +24,9 @@ def calculate_functional_maps(model,n_cpus = 1, refine= None):
         mesh2 (list) : second array with vertices and faces 
         model (int) : functional maps model pyFM
         refine (str) : Selected method to refine functional map                                                                                                                                                           
-
+    Returns:
+        FM : Functional map (correspondance matrix)
+        p2p21 : Point to point map 
     """   
     print('cpus used', n_cpus)
     fit_params = {
@@ -61,13 +64,14 @@ def calculate_functional_maps(model,n_cpus = 1, refine= None):
 
 def compute_shape_difference(model):
     """
-    Save the mesh as a .off file using a divergent colormap of wks siganute
+    Computes shape difference operators, area-based and conformal 
     
-    filename : path with filename to save data
-    vertlist : list of mesh vertices
-    facelist : list of mesh faces
-    wks : wks descriptors 
+    Args:
+        model : functional map fitting model computed with pyFM
 
+    Returns:
+        D_area : Area-based shape difference operator
+        D_conformal : Conformal shape difference operator
     """
     model.compute_SD()
     D_area = model.D_a

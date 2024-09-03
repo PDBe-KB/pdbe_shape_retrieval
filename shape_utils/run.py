@@ -1,18 +1,23 @@
 import numpy as np
 import argparse
 import logging
-from shape_utils.pyhks import trimesh, hks
 from shape_utils.pyFM_pdbe.mesh import TriMesh
 from shape_utils.spectral_descr import calculate_descriptors
+from shape_utils.predict_similarity import calculate_similarity_score
 from shape_utils.functional_maps import calculate_functional_maps
 from shape_utils.pyFM_pdbe import functional 
 from shape_utils.utils import save_data_to_csv, save_list_to_csv
-from shape_utils.zernike_descr import get_inv
+from shape_utils.zernike_descr import get_inv, plytoobj, predict_similarity
 from shape_utils.similarity_scores import calculate_geodesic_norm_score
 import pandas as pd
 import matplotlib.pyplot as plt
 import os 
 import multiprocessing 
+
+import cProfile
+import pstats
+import io
+
 
 def main():
     def_no_cpu = min(min(8, multiprocessing.cpu_count()), 8)
@@ -44,12 +49,12 @@ def main():
     parser.add_argument(
         "--map2zernike_binary",
         help="path to map2zernike binary",
-        required=False,
+        default = 'map2zernike',
     )
     parser.add_argument(
         "--obj2grid_binary",
-        help="obj2grid binary (needed for Zernike descriptors)",
-        required=False,
+        help="path to obj2grid binary (needed for Zernike descriptors)",
+        default = "obj2grid",
     )
     parser.add_argument(
         "--neigvecs",
@@ -102,13 +107,15 @@ def main():
         help="Use refining method for calculation of fuctional maps: icp,zoomout",
         required=False,
     )
+
+    parser.add_argument(
+        "--models_zernike",
+        type=str,
+        help="Path to Best models for neural network and similarity scores of Zernike descriptors",
+    )
   
     args = parser.parse_args()
     
-    mesh1 = TriMesh(args.input_mesh1, area_normalize=True, center=False)
-    mesh2 = TriMesh(args.input_mesh2, area_normalize=True, center=False)
-    
-
     if args.descr =='WKS':
         parameter_descr = 'energy'
     if args.descr == 'HKS':
@@ -119,6 +126,9 @@ def main():
 
 
     if args.descr =='WKS'or args.descr == 'HKS':
+
+        mesh1 = TriMesh(args.input_mesh1, area_normalize=True, center=False)
+        mesh2 = TriMesh(args.input_mesh2, area_normalize=True, center=False)
 
         #ouput files with descriptors and parameters list for structure 1 and structure 2
 
@@ -175,15 +185,20 @@ def main():
 
         if not "map2zernike" and not os.path.isfile(args.map2zernike_binary):
             
-            raise Exception(f"map2zernike binary not found or is not a file: {args.map2zernike_binary}")
+            raise Exception(f"map2zernike binary not found or path not provided: {args.map2zernike_binary}")
 
         if not "obj2grid" and not os.path.isfile(args.obj2grid_binary):
 
-            raise Exception(f"obj2grid binary not found or is not a file: {args.obj2grid_binary}")
+            raise Exception(f"obj2grid binary not found or path to binary not provided: {args.obj2grid_binary}")
 
         try:
-            get_inv(args.input_mesh1,args.pdb_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
-            
+
+            obj_file_1 = plytoobj(args.input_mesh1,args.output)
+            obj_file_2 = plytoobj(args.input_mesh2,args.output)
+            get_inv(obj_file_1,args.pdb_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
+            get_inv(obj_file_2,args.pdb_ids[1],args.map2zernike_binary, args.obj2grid_binary,args.output)
+            #calculate_similarity_score(args.models_zernike,args.output,atom_type = 'fullatom')
+            #predict_similarity(args.output,args.output,args.models_zernike)
         except Exception as e:
             logging.error(
                 "something went wrong, probably map2zernike or obj2grid binaries not working properly  "
@@ -195,6 +210,18 @@ def main():
     
 
 if __name__ == "__main__":
+
+    pr = cProfile.Profile()
+    pr.enable()
+
     main()
-    
+
+    pr.disable()
+    s = io.StringIO()
+    ps = pstats.Stats(pr, stream=s).sort_stats('tottime')
+    ps.print_stats()
+
+    with open('test.txt', 'w+') as f:
+        f.write(s.getvalue())
+    #cProfile.run('main()')
     
