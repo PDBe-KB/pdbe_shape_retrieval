@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from shape_utils.pyFM_pdbe.mesh import TriMesh
 from shape_utils.pyFM_pdbe import functional 
-from shape_utils.pyhks import trimesh, hks
-from shape_utils.pyhks.trimesh import save_off
 import logging
 import os 
 
@@ -24,6 +22,8 @@ def calculate_descriptors(model,kprocess,n_ev,ndescr,step,landmarks, output_dir,
         step (int)   : sub-sample step, in order to not use too many descriptors
         landmarks  : (p,1|2) array of indices of landmarks to match.
                         If (p,1) uses the same indices for both.
+        output_dir : path to output directory
+        descr_type : Descriptor type : WKS (default), HKS or Zernike 
  
     """   
     
@@ -47,28 +47,25 @@ def calculate_descriptors(model,kprocess,n_ev,ndescr,step,landmarks, output_dir,
     enlist = model.energylist
 
     return descr_1, descr_2, enlist
-    
-    #    save_to_csv(coords,WKS_1, output_dir)
-        
-    #    return WKS_1
 
-def saveWKSColors(filename, vertlist, wks, facelist, cmap = 'tab20c'):
-    """
-    Save the mesh as a .off file using a divergent colormap of wks siganute
-    
-    filename : path with filename to save data
-    vertlist : list of mesh vertices
-    facelist : list of mesh faces
-    wks : wks descriptors 
 
-    """
-    c = plt.get_cmap(cmap)
-    x = (wks - np.min(wks))
-    x /= np.max(x)
-    np.array(np.round(x*255.0), dtype=np.int32)
-    C = c(x)
-    C = C[:, 0:3]
-    save_off(filename, vertlist, C, facelist)
+#def saveWKSColors(filename, vertlist, wks, facelist, cmap = 'tab20c'):
+#    """
+#    Save the mesh as a .off file using a divergent colormap of wks siganute
+    
+#    filename : path with filename to save data
+#    vertlist : list of mesh vertices
+#    facelist : list of mesh faces
+#    wks : wks descriptors 
+#
+#    """
+#    c = plt.get_cmap(cmap)
+#    x = (wks - np.min(wks))
+#    x /= np.max(x)
+#    np.array(np.round(x*255.0), dtype=np.int32)
+#   C = C[:, 0:3]
+#    C = c(x)
+#    save_off(filename, vertlist, C, facelist)
 
 def distance_WKS(wks1,wks2,output_dir):
     """

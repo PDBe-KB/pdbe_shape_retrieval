@@ -9,9 +9,9 @@ import pymeshfix
 logger = logging.getLogger()
 
 def save_data_to_csv(data, output_file):
-    """Dump WKS or HKS descriptors into a output file.                                                                                                                   
+    """Dump matrix data into a output csv file.                                                                                                                   
         Args:
-            data (dict): The data (for spectral descriptors) to be dumped.                                                                        
+            data (dict): The data (for spectral descriptors or functional maps) to be dumped.                                                                        
             output_file (str): The path to the output file.                                                           
                                                                                              
         Raises:                                                                                                        
@@ -39,7 +39,7 @@ def save_data_to_csv(data, output_file):
         return None 
 
 def save_list_to_csv(data, output_file):
-    """Dump parameters list into an output file.                                                                                                                   
+    """Dump list into a csv output file.                                                                                                                   
         Args:
             data (dict): The data for list of parameters to be dumped.                                                                        
             output_file (str): The path to the output file.                                                           
@@ -63,9 +63,3 @@ def save_list_to_csv(data, output_file):
 
         return None
 
-def clean_mesh(mesh_file):
-    vedo_mesh = vp.load(mesh_file)
-    v, f = vedo_mesh.points(), np.asarray(vedo_mesh.faces())
-    meshfix = pymeshfix.MeshFix(v, f)
-    meshfix.repair()
-    return vp.Mesh([meshfix.v, meshfix.f])
