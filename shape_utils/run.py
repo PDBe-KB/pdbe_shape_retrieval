@@ -6,7 +6,7 @@ from shape_utils.spectral_descr import calculate_descriptors
 from shape_utils.predict_similarity import calculate_similarity_score
 from shape_utils.functional_maps import calculate_functional_maps
 from shape_utils.pyFM_pdbe import functional 
-from shape_utils.utils import save_data_to_csv, save_list_to_csv
+from shape_utils.utils import save_data_to_csv, save_list_to_csv, find_minimum_distance_meshes
 from shape_utils.zernike_descr import get_inv, plytoobj, predict_similarity
 from shape_utils.similarity_scores import calculate_geodesic_norm_score
 import pandas as pd
@@ -21,6 +21,7 @@ import io
 
 def main():
     def_no_cpu = min(min(8, multiprocessing.cpu_count()), 8)
+    print(multiprocessing.cpu_count())
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -95,7 +96,7 @@ def main():
     parser.add_argument(
         "--n_cpus",
         type=int,
-        default=def_no_cpu,
+        default=1,
         help="Number of threads to be used for this calculation.",
         required=False,
     )
@@ -105,6 +106,13 @@ def main():
         type=str,
         default = None,        
         help="Use refining method for calculation of fuctional maps: icp,zoomout",
+        required=False,
+    )
+
+    parser.add_argument(
+        "--min_dist_mesh", 
+        action="store_true", 
+        help="Calculate minimum distance between the two meshes",
         required=False,
     )
 
@@ -124,6 +132,11 @@ def main():
     pdb_id_1 = args.pdb_ids[0]
     pdb_id_2 = args.pdb_ids[1]
 
+    if args.min_dist_mesh :
+       mesh1 = TriMesh(args.input_mesh1, area_normalize=True, center=False)
+       mesh2 = TriMesh(args.input_mesh2, area_normalize=True, center=False) 
+       min_distance = find_minimum_distance_meshes(mesh1,mesh2)
+       print('Minimum distance is:',min_distance)
 
     if args.descr =='WKS'or args.descr == 'HKS':
 

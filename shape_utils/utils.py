@@ -5,6 +5,9 @@ from pandas import DataFrame
 import numpy as np
 import vedo as vp
 import pymeshfix 
+from scipy.spatial import KDTree
+from scipy.spatial.distance import squareform
+
 
 logger = logging.getLogger()
 
@@ -62,4 +65,15 @@ def save_list_to_csv(data, output_file):
         logging.info(f"No data found to save")
 
         return None
-
+def find_minimum_distance_meshes(mesh1, mesh2):
+    """Find the minimum distance between two meshes."""
+    # Get the vertices of each mesh
+    vertices1 = mesh1.vertlist
+    vertices2 = mesh2.vertlist
+    
+    # Use a KDTree for efficient nearest neighbor search
+    tree = KDTree(vertices2)
+    distances, _ = tree.query(vertices1)
+    
+    # Return the minimum distance
+    return np.min(distances)
