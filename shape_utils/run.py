@@ -133,8 +133,8 @@ def main():
     pdb_id_2 = args.pdb_ids[1]
 
     if args.min_dist_mesh :
-       mesh1 = TriMesh(args.input_mesh1, area_normalize=True, center=False)
-       mesh2 = TriMesh(args.input_mesh2, area_normalize=True, center=False) 
+       mesh1 = TriMesh(args.input_mesh1, area_normalize=False, center=False)
+       mesh2 = TriMesh(args.input_mesh2, area_normalize=False, center=False) 
        min_distance = find_minimum_distance_meshes(mesh1,mesh2)
        print('Minimum distance is:',min_distance)
 
