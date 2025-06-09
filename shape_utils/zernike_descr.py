@@ -16,12 +16,7 @@
 # convert pdb file to triangulation data and do 3dzd calculation
 
 import os
-import glob
-import sys
 import importlib.util  
-import numpy as np
-from io import StringIO
-
 import importlib.util 
 
 def get_inv(obj_file,fileid,map3dz_binary, obj2grid_binary,output_dir):
@@ -44,8 +39,7 @@ def get_inv(obj_file,fileid,map3dz_binary, obj2grid_binary,output_dir):
     #print(mv_command)
     os.system(mv_command)
 
-    mv_command = 'cp ' + fileid + '.* ' + output_dir
-    #print(mv_command)
+    mv_command = 'mv ' + fileid + '.* ' + output_dir
     os.system(mv_command)
     #rm_command = 'rm ' + output_dir + fileid + '.obj'
     #print(rm_command)                                                                                              
@@ -65,6 +59,7 @@ def plytoobj(filename,output_dir):
                 ply_file_content = ply_file.read().split('\n')[:-1]
                 for content in ply_file_content:
                         content_info = content.split()
+                        print(len(content_info))
                         if len(content_info) == 6 and content[0:3] != 'obj':
                                 vertex_info = 'v ' + ' '.join(content_info[0:3])
                                 obj_file.write(vertex_info + '\n')

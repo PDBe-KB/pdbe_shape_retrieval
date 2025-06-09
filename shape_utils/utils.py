@@ -1,10 +1,7 @@
 import logging
-import os 
 import pandas as pd
 from pandas import DataFrame
 import numpy as np
-import vedo as vp
-import pymeshfix 
 from scipy.spatial import KDTree
 from scipy.spatial.distance import squareform
 
