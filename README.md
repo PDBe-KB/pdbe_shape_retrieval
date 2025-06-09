@@ -100,7 +100,7 @@ Required arguments are :
 ```
 
 
-Other optional arguments are:
+Other optional arguments:
 
 For pre-processing and fixing faulty meshes:
 ```
@@ -185,12 +185,8 @@ The process will output a CSV file with the point-to-point map from mesh2 to mes
 In this output file the No. of rows N corresponds to the no. of vertices in Mesh 2 and each row displays the corresponding vertex index of Mesh 1. 
 
 ```
-3
-4
-8
 8
 9
-10
 10
 10
 1
