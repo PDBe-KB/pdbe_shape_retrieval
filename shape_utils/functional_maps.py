@@ -1,9 +1,5 @@
 import numpy as np
-from shape_utils.pyFM_pdbe import functional 
 import logging
-import seaborn as sns
-
-
 
 logger = logging.getLogger()
 
@@ -42,23 +38,19 @@ def calculate_functional_maps(model,n_cpus = 1, refine= None):
     if refine is None :
         logging.info(f"Computing point to point map using correspondance matrix")
         p2p_21 = model.get_p2p(n_jobs=n_cpus)
-        #model.compute_SD()
+        
     #refine model using ICP or Zoom
     if refine == 'icp':
         model.change_FM_type('classic')
         model.icp_refine(n_jobs=n_cpus,verbose=True)
         p2p_21 = model.get_p2p(n_jobs=n_cpus)
-        #model.compute_SD()
         
     if refine == 'zoomout':
         model.change_FM_type('classic') # We refine the first computed map, not the icp-refined one
         model.zoomout_refine(nit=11, step = 1,n_jobs=n_cpus,verbose=True)
         p2p_21 = model.get_p2p(n_jobs=n_cpus)
         #model.compute_SD()
-
-    print(' Calculating shape distance matrix')
     
-    #return model.D_a, model.D_c, p2p_21, model.FM
     return p2p_21, model.FM
 
 
@@ -78,3 +70,29 @@ def compute_shape_difference(model):
     D_conformal = model.D_c
 
     return D_area, D_conformal 
+
+def calculate_functional_maps_chem(model,descr1,descr2,n_cpus = 1, refine= None):
+    """                                                                                                                                                                                
+    Calculate functional maps and point to point maps with pyFM code (https://github.com/RobinMagnet/pyFM)                                                                                                                                        
+                                                                                                                                                                                       
+    Returns functional maps and fitted model   
+
+    Args:               
+        mesh1 (list) : array with vertices and faces 
+        mesh2 (list) : second array with vertices and faces 
+        model (int) : functional maps model pyFM
+        refine (str) : Selected method to refine functional map                                                                                                                                                           
+    Returns:
+        FM : Functional map (correspondance matrix)
+        p2p21 : Point to point map 
+    """   
+    print('cpus used', n_cpus)
+    fit_params = {
+        'w_descr': 1e0,
+        'w_lap': 1e-2,
+        'w_dcomm': 1e-1,
+        'w_orient': 0
+    }
+    model.fit_othdescr(descr1,descr2,**fit_params, verbose=True)
+
+    return model.FM

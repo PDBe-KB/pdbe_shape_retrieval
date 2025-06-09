@@ -1,16 +1,20 @@
 import numpy as np
+import csv
 import argparse
 import logging
-from shape_utils.pyFM_pdbe.mesh import TriMesh
+from pyFM import mesh
+from pyFM import functional
+import trimesh
+
 from shape_utils.spectral_descr import calculate_descriptors
-from shape_utils.predict_similarity import calculate_similarity_score
 from shape_utils.functional_maps import calculate_functional_maps
-from shape_utils.pyFM_pdbe import functional 
+from shape_utils.meshes import fix_mesh, remove_until_vertex
 from shape_utils.utils import save_data_to_csv, save_list_to_csv, find_minimum_distance_meshes
 from shape_utils.zernike_descr import get_inv, plytoobj, predict_similarity
 from shape_utils.similarity_scores import calculate_geodesic_norm_score
-import pandas as pd
-import matplotlib.pyplot as plt
+
+#import pandas as pd
+#import matplotlib.pyplot as plt
 import os 
 import multiprocessing 
 
@@ -20,8 +24,7 @@ import io
 
 
 def main():
-    def_no_cpu = min(min(8, multiprocessing.cpu_count()), 8)
-    #print(multiprocessing.cpu_count())
+    def_no_cpu = multiprocessing.cpu_count()
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -36,9 +39,9 @@ def main():
         required=True,
     )
     parser.add_argument(
-        "--pdb_ids",
+        "--entry_ids",
         nargs="+",
-        help="List of two pdb_ids",
+        help="List of two entry ids",
         required=True,
     )
     parser.add_argument(
@@ -47,6 +50,37 @@ def main():
         help="Path to output files (descriptors)",
         required=True,
     )
+
+    parser.add_argument(
+        "--fix_meshes",
+        action="store_true", 
+        help="Preprocess meshes to be well-conditioned to compute descriptors",
+        required=False,
+    )
+
+    parser.add_argument(
+        "--collapse_vertices",
+        action=argparse.BooleanOptionalAction,
+        default = False,
+        help="Use decimation quadric edgecollapse to reduce resolution of mesh",
+    )
+    parser.add_argument(
+        "--resolution",
+        type=float,
+        required=False,
+        default = 0.5 ,
+        help="Factor to collapse No. of vertices, e.g 0.5 will reduce the vertices to ~half",
+    )
+
+    parser.add_argument(
+        "--reconstruct_mesh", 
+        action="store_true", 
+        default = False,
+        help="Reconstruct mesh to create a well-conditioned mesh",
+        required=False,
+    )
+
+
     parser.add_argument(
         "--map2zernike_binary",
         help="path to map2zernike binary",
@@ -96,7 +130,7 @@ def main():
     parser.add_argument(
         "--n_cpus",
         type=int,
-        default=1,
+        default=def_no_cpu,
         help="Number of threads to be used for this calculation.",
         required=False,
     )
@@ -131,77 +165,108 @@ def main():
     args = parser.parse_args()
     
 
-    if args.descr =='WKS':
-        parameter_descr = 'energy'
-    if args.descr == 'HKS':
-        parameter_descr = 'time'
+    #if args.descr =='WKS':
+    #    parameter_descr = 'energy'
+    #if args.descr == 'HKS':
+    #    parameter_descr = 'time'
 
-    pdb_id_1 = args.pdb_ids[0]
-    pdb_id_2 = args.pdb_ids[1]
+    entry_id_1 = args.entry_ids[0]
+    entry_id_2 = args.entry_ids[1]
+    mesh1_file = args.input_mesh1
+    mesh2_file = args.input_mesh2
+    resolution = args.resolution
+    reconstruct = args.reconstruct_mesh
 
+    if reconstruct and not args.fix_meshes:
+        logging.error(
+                    "--recontruct_mesh needs to be used with --fix_meshes flag  "
+                )
+    if args.collapse_vertices and not args.fix_meshes:
+        logging.error(
+                    "--collapse_vertices needs to be used with --fix_meshes flag  "
+                )
+
+    if args.fix_meshes :
+        
+        v_1,f_1=fix_mesh(mesh1_file,resolution,args.collapse_vertices,reconstruct)
+        v_2,f_2=fix_mesh(mesh2_file,resolution,args.collapse_vertices,reconstruct) 
+        
     if args.min_dist_mesh :
-       mesh1 = TriMesh(args.input_mesh1, area_normalize=False, center=False)
-       mesh2 = TriMesh(args.input_mesh2, area_normalize=False, center=False) 
+       if args.fix_meshes:
+             mesh1 = mesh.TriMesh(v_1, f_1)
+             mesh2 = mesh.TriMesh(v_2, f_2)
+       else:
+            mesh1 = mesh.TriMesh(args.input_mesh1, area_normalize=False, center=False)
+            mesh2 = mesh.TriMesh(args.input_mesh2, area_normalize=False, center=False) 
+       
        min_distance = find_minimum_distance_meshes(mesh1,mesh2)
        print('Minimum distance is:',min_distance)
+    
     if not args.no_shape_retrieval:
 
         if args.descr =='WKS'or args.descr == 'HKS':
-
-            mesh1 = TriMesh(args.input_mesh1, area_normalize=True, center=False)
-            mesh2 = TriMesh(args.input_mesh2, area_normalize=True, center=False)
+            if args.fix_meshes:
+                mesh1 = mesh.TriMesh(v_1,f_1, area_normalize=True, center=False)
+                mesh2 = mesh.TriMesh(v_2,f_2, area_normalize=True, center=False)
+            else:    
+                mesh1 = mesh.TriMesh(args.input_mesh1, area_normalize=True, center=False)
+                mesh2 = mesh.TriMesh(args.input_mesh2, area_normalize=True, center=False)
 
             #ouput files with descriptors and parameters list for structure 1 and structure 2
 
-            param_list_file = "{}_{}_{}_list.csv".format(parameter_descr,args.descr,pdb_id_1,args.descr,pdb_id_2)
-            descr1_file = "{}_descr_{}.csv".format(args.descr,pdb_id_1)
-            descr2_file = "{}_descr_{}.csv".format(args.descr,pdb_id_2)
+            #param_list_file = "{}_{}_{}_list.csv".format(parameter_descr,args.descr,entry_id_1,args.descr,entry_id_2)
+            descr1_file = "{}_descr_{}.csv".format(args.descr,entry_id_1)
+            descr2_file = "{}_descr_{}.csv".format(args.descr,entry_id_2)
 
             output_file_1 = os.path.join(args.output,descr1_file)
             output_file_2 = os.path.join(args.output,descr2_file)
-            output_file_3 = os.path.join(args.output,param_list_file)
+            #output_file_3 = os.path.join(args.output,param_list_file)
 
-            logging.info(f"Calculating {args.descr} descriptors for structures {pdb_id_1} and {pdb_id_2}")
+            logging.info(f"Calculating {args.descr} descriptors for structures {entry_id_1} and {entry_id_2}")
 
             model = functional.FunctionalMapping(mesh1,mesh2)
 
             if not os.path.exists(output_file_1) or not os.path.exists(output_file_2):
             
-                descr1,descr2,paramlist = calculate_descriptors(model,args.neigvecs,args.n_ev,args.ndescr,args.step,args.landmarks,args.output,args.descr)
-        
+                descr1,descr2 = calculate_descriptors(model,args.neigvecs,args.n_ev,args.ndescr,args.step,args.landmarks,args.output,args.descr)
                 data1 = np.array(descr1)
                 data2 = np.array(descr2)
-                data3 = np.array(paramlist)
+                #data3 = np.array(paramlist)
         
                 #save descriptors
                 save_data_to_csv(data1,output_file_1)
                 save_data_to_csv(data2,output_file_2)
 
                 #save parameters list
-                save_list_to_csv(data3,output_file_3)
+                #save_list_to_csv(data3,output_file_3)
 
 
-            FM_file = "{}_{}_FM.csv".format(pdb_id_1,pdb_id_2)
+            FM_file = "{}_{}_FM.csv".format(entry_id_1,entry_id_2)
             output_FM = os.path.join(args.output,FM_file)
         
-            p2p21_file = "{}_{}_p2p21.csv".format(pdb_id_1,pdb_id_2)
+            p2p21_file = "{}_{}_p2p21.csv".format(entry_id_1,entry_id_2)
             output_p2p21 = os.path.join(args.output, p2p21_file)
 
             #compute correspondance matrix, shape difference matrix and p2p21         
-        
+            if os.path.exists(output_FM) and os.path.exists(output_p2p21):
+                with open(output_FM) as FMfile:
+                    FM = list(csv.reader(FMfile))
+                    FM = np.asarray(FM, dtype=float)
+                score_geodesic_norm_eigenvalues = calculate_geodesic_norm_score(FM)
+                print('Disimilarity score is:',score_geodesic_norm_eigenvalues)
+
             if not os.path.exists(output_FM) or not os.path.exists(output_p2p21):
 
                 p2p21, FM = calculate_functional_maps(model,args.n_cpus,refine = args.refine)
         
                 score_geodesic_norm_eigenvalues = calculate_geodesic_norm_score(FM)
-        
-
-                #save descriptors
+            
+                #save correspondence matrix and point to point map
                 save_data_to_csv(FM,output_FM)
                 save_list_to_csv(p2p21,output_p2p21)
 
                 print('Disimilarity score is:',score_geodesic_norm_eigenvalues)
-        
+           
         elif args.descr =='3DZD':
 
             if not "map2zernike" and not os.path.isfile(args.map2zernike_binary):
@@ -213,16 +278,33 @@ def main():
                 raise Exception(f"obj2grid binary not found or path to binary not provided: {args.obj2grid_binary}")
 
             try:
-
-                obj_file_1 = plytoobj(args.input_mesh1,args.output)
-                obj_file_2 = plytoobj(args.input_mesh2,args.output)
-                get_inv(obj_file_1,args.pdb_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
-                get_inv(obj_file_2,args.pdb_ids[1],args.map2zernike_binary, args.obj2grid_binary,args.output)
-                #calculate_similarity_score(args.models_zernike,args.output,atom_type = 'fullatom')
-                #predict_similarity(args.output,args.output,args.models_zernike)
+                if args.fix_meshes:
+                    mesh_1 = trimesh.Trimesh(vertices=v_1, faces=f_1)
+                    mesh_2 = trimesh.Trimesh(vertices=v_2, faces=f_2)
+                    output1_obj=os.path.join(args.output,'{}_fixed.obj'.format(entry_id_1))
+                    output2_obj=os.path.join(args.output,'{}_fixed.obj'.format(entry_id_2))
+                    mesh_1.export(output1_obj)
+                    mesh_1.export(output2_obj)
+                    remove_until_vertex(output1_obj)
+                    remove_until_vertex(output2_obj)
+                    get_inv(output1_obj,args.entry_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(output2_obj,args.entry_ids[1],args.map2zernike_binary, args.obj2grid_binary,args.output)
+                
+                else:
+                    _, ext1 = os.path.splitext(args.input_mesh1)
+                    _, ext2 = os.path.splitext(args.input_mesh2)
+                    if ext1.lower() != '.obj' or ext2.lower() != '.obj':
+                        raise Exception("Zernike descriptors take '.obj' files as input, try option --fix_meshes to compute them"
+                    )
+                    remove_until_vertex(args.input_mesh1)
+                    remove_until_vertex(args.input_mesh2)
+            
+                    get_inv(args.input_mesh1,args.entry_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(args.input_mesh2,args.entry_ids[1],args.map2zernike_binary, args.obj2grid_binary,args.output)
+                
             except Exception as e:
                 logging.error(
-                    "something went wrong, probably map2zernike or obj2grid binaries not working properly  "
+                    "something went wrong, check that mesh file is well-conditioned and map2zernike or obj2grid binaries are working properly  "
                 )
                 logging.error(e)
             

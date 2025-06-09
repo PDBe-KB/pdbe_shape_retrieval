@@ -1,7 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from shape_utils.pyFM_pdbe.mesh import TriMesh
-from shape_utils.pyFM_pdbe import functional 
 import logging
 import os 
 
@@ -44,30 +41,12 @@ def calculate_descriptors(model,kprocess,n_ev,ndescr,step,landmarks, output_dir,
 
     descr_1 = model.descr1
     descr_2 = model.descr2
-    enlist = model.energylist
+    #enlist = model.energylist
 
-    return descr_1, descr_2, enlist
+    return descr_1, descr_2
 
 
-#def saveWKSColors(filename, vertlist, wks, facelist, cmap = 'tab20c'):
-#    """
-#    Save the mesh as a .off file using a divergent colormap of wks siganute
-    
-#    filename : path with filename to save data
-#    vertlist : list of mesh vertices
-#    facelist : list of mesh faces
-#    wks : wks descriptors 
-#
-#    """
-#    c = plt.get_cmap(cmap)
-#    x = (wks - np.min(wks))
-#    x /= np.max(x)
-#    np.array(np.round(x*255.0), dtype=np.int32)
-#   C = C[:, 0:3]
-#    C = c(x)
-#    save_off(filename, vertlist, C, facelist)
-
-def distance_WKS(wks1,wks2,output_dir):
+def distance_WKS(wks1,wks2):
     """
     Compute distance between two descriptors maps
     Returns file with distance  
@@ -76,34 +55,16 @@ def distance_WKS(wks1,wks2,output_dir):
     wks2 : list of wks descriptors for mesh2
 
     """
-    dist_coefs=[]
     distance_wks = []
     for i,j in zip(wks1,wks2):
-        dist_coefs=[]
         coef_sum = 0.0
         for wks_e1,wks_e2 in zip(i,j):
-            if abs((wks_e1-wks_e2)/(wks_e1+wks_e2)) > 1.0:
-                print('not equal',wks_e1, wks_e2)
+            denom = wks_e1 + wks_e2
+            if denom != 0:
+                if abs((wks_e1-wks_e2)/(wks_e1+wks_e2)) > 1.0:
+                    print('not equal',wks_e1, wks_e2)
             coef = abs(wks_e1-wks_e2)
             coef_sum += coef
-
-            dist_coefs.append(coef)
-        d_wks = np.trapz(dist_coefs)
-        distance_wks.append(d_wks)
-    output_file = os.path.join(output_dir,"dist_wks_maps.dat")
-    #save_to_csv(distance_wks, output_file)
+        distance_wks.append(coef_sum)
     return distance_wks
-    
-#def calculate_HKS(mesh1,mesh2,kprocess,step, entry1_id,entry2_id,output_path):
-#    (VPos1, VColors1, ITris1) = trimesh.load_off(mesh1)
-#    (VPos2, VColors2, ITris2) = trimesh.load_off(mesh2)
-#    neigvecs1 = min(VPos1.shape[0], kprocess)
-#    neigvecs2 = min(VPos2.shape[0], kprocess)
-#    descr1 = hks.get_hks(VPos1, ITris1, neigvecs1, np.array([step]))
-#    descr2 = hks.get_hks(VPos2, ITris2, neigvecs2, np.array([step]))
-#
-#    output1=os.path.join(output_path,"{}_hks.dat".format(entry1_id))
-#    output2=os.path.join(output_path,"{}_hks.dat".format(entry2_id))
-#
-#    hks.saveHKSColors(output1, VPos1, descr1[:, 0], ITris1)
-#    hks.saveHKSColors(output2, VPos2, descr2[:, 0], ITris2)
+

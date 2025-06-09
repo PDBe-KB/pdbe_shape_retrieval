@@ -2,22 +2,6 @@ import numpy as np
 from numpy.linalg import inv
 
 
-def get_pairs_two(array1, array2):
-    """                                                                                                                                                                                
-    Obtains list of possible pairs between elements of two arrays
-   
-    Args:               
-        array1 : first array or list of elements
-        array2 : second array or list of elements
-    Returns:
-        pairs : list of pairs 
-    """    
-    pairs = []
-    for item1 in array1:
-        for item2 in array2:
-            pairs.append((item1, item2))
-    return pairs
-
 def calculate_geodesic_norm_score(FM):
     """                                                                                                                                                                                
     Calculates norm of correspondance matrix based on geodesic distance of eigenvalues spectrum                                                                                                                                
