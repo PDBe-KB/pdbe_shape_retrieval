@@ -81,12 +81,12 @@ To run the modules in the command line:
 **pdbe_shape-retrieval**: 
 
 ```
-python pdbe_shape-retrieval/shape_utils/run.py [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_MESH_2 -o PATH_TO_OUTPUT_DIR
+python pdbe_shape-retrieval/shape_utils/run.py [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_MESH_2  --entry_ids ENTRY_ID_1 ENTRY_ID_2  -o PATH_TO_OUTPUT_DIR
 ```
 OR 
 
 ```
-shape_retrieval [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_MESH_2 -o PATH_TO_OUTPUT_DIR
+shape_retrieval [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_MESH_2 --entry_ids ENTRY_ID_1 ENTRY_ID_2 -o PATH_TO_OUTPUT_DIR
 
 ```
 
