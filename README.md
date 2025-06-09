@@ -29,7 +29,7 @@ This package requires the installation of [pyFM](https://github.com/RobinMagnet/
 pip install pyfmaps
 ```
 
-For the calculation of Zernike Descriptors, binaries `obj2grid` and `map2zernike` in 3D-Surfer code need to be provided:
+For the calculation of Zernike Descriptors, binaries `obj2grid` and `map2zernike` from 3D-Surfer and obj2grid codes need to be provided:
 
 To make your life easier when running the process, you can set two path environment variables for 3D-Surfer:
 
