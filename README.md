@@ -23,11 +23,28 @@ python setup.py install
 ``` 
 ## Dependencies 
 
-This package requires the installation of [pyFM](https://github.com/RobinMagnet/pyFM) module:
+This package requires the installation of [pyFM](https://github.com/RobinMagnet/pyFM) module for the calculation of spectral descriptors:
 
 ```
 pip install pyfmaps
 ```
+
+For the calculation of Zernike Descriptors, binaries `obj2grid` and `map2zernike` in 3D-Surfer code need to be provided:
+
+To make your life easier when running the process, you can set two path environment variables for 3D-Surfer:
+
+An environment variable to the `obj2grid` binary:
+
+```
+export PATH="$PATH:your_path_to_obj2grid/obj2grid"
+```
+
+A path to the `map2zernike binary` of 3D-Surfer :
+
+```
+export PISA_SETUP_DIR="/your_path_to_3DSurfer/bin/"
+```
+
 
 Other dependencies can be installed with:
 
@@ -92,7 +109,7 @@ For pre-processing and fixing faulty meshes:
 --resolution : Factor to collapse No. of vertices, e.g 0.5 will reduce the vertices to ~half. The default is 0.5. This option should be used with --collapse_vertices.
 --reconstruct_mesh: Reconstruct the mesh to obtain a new well-conditioned mesh using VCG surface reconstruction. This option must be used with --fix_meshes.
 ```
-Select the shape descriptor you wish to compute:
+To select the shape descriptor:
 ```
 --descr : Type of descriptor to calculate: WKS,HKS,3DZD. The default is WKS.
 ```
@@ -105,10 +122,84 @@ Options for the calculation of spectral descriptors:
 --landmarks     : Input indices of landmarks
 --step          : Subsample step to avoid using too many descriptors.
 --descr         : Type of descriptor to calculate: WKS,HKS,Zernike
---n_cpus        : Number of threads to be used for the calculation of functional maps.
---refine        : Use refining method for calculation of fuctional maps: icp,zoomout
+--n_cpus        : Number of threads used to calculate functional maps.
+--refine        : Use refining method for calculation of functional maps: icp,zoomout
+
+```
+Options for the calculation of Zernike descriptors:
+
+```
+--map2zernike_binary : Path to map2zernike binary
+--obj2grid_binary : 'Path to obj2grid_binary'
+```
+Other options:
+
+```
+--min_dist_mesh : Calculate the minimum distance between two meshes
+--no_shape_retrieval: Switch off the calculation of shape descriptors
 ```
 
+## Expected output files for Spectral descriptors
+
+The process will output CSV files with the WKS/HKS descriptors for the two input meshes:
+
+*DESCR_TYPE_descr_ENTRY_ID_1.csv*
+*DESCR_TYPE_descr_ENTRY_ID_2.csv*
+
+where DESCR_TYPE is the selected descriptor (WKS) and ENTRY_ID is the entry id of the input structure. 
+
+A vector of N descriptors is given for each vertex of the mesh, and therefore the No. of rows of the file is the no. of vertices of the mesh:
+
+In the following example N=5 and the output file would look like this:
+```
+wks_descriptors[5]
+0.18651766218142352,0.18146979432734137,0.17754398826544535,0.1750789523051364,0.1746571180966082
+0.4586452611353971,0.6323283658831136,0.8661039157025516,1.1267042526529782,1.3487451570690734
+1.4914506660788938,1.5658528547661157,1.6007092706487118,1.6165954563778082,1.623964369261013
+1.6274787893755465,1.6291230475034042,1.6297139199237025,1.6295464581278336,1.628654203946087
+.
+.
+(No. of rows = No. of vertices in mesh file)
+
+```
+
+The process will output a CSV file with the correspondence matrix or functional map (FM):
+
+*ENTRY_ID_1_ENTRY_ID_2_FM.csv*
+
+where ENTRY_ID_* is the entry ID for each input structure.
+
+The csv file contains NxN rows and columns with values of the transformation coefficients c_ij. N is the number of terms or Laplace-Beltrami functions used in the expansion in fuctional space. 
+
+For example if N=4 the output file would look like this:
+```
+-1.0,5.363410999415223e-05,4.484982613902667e-06,8.651562620111304e-06,-7.754014997702692e-06
+9.920763930058441e-06,7.5488644078142375e-06,-3.4094219364651095e-06,-1.408423031071398e-05
+-4.28569154629773e-06,-3.394752296984109e-06,3.821338048287914e-06,1.177611477637059e-05
+-1.59927066983662e-06,-7.931408043822854e-06,9.907381306458515e-06,1.1689248196168793e-05
+```
+The process will output a CSV file with the point-to-point map from mesh2 to mesh1:
+
+*ENTRY_ID_1_ENTRY_ID_2_p2p21.csv*
+
+In this output file the No. of rows N corresponds to the no. of vertices in Mesh 2 and each row displays the corresponding vertex index of Mesh 1. 
+
+```
+3
+4
+8
+8
+9
+10
+10
+10
+1
+1
+.
+.
+(No. of rows in output file is the No. of vertices in Mesh 2)
+```
+## Expected output files for Zernike descriptors
 
 ## Versioning
 
