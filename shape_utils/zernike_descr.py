@@ -73,24 +73,5 @@ def plytoobj(filename,output_dir):
         return obj_filename
 
 
-def predict_similarity(input_dir,output_dir,module_similarity_path):
-       module_path = os.path.join(module_similarity_path,'predict_similarity.py')
-       spec = importlib.util.spec_from_file_location("mod", module_path) 
-       similarity_module = importlib.util.module_from_spec(spec)
-       spec.loader.exec_module(similarity_module)
-       
-       predict_similarity_command = 'python' + ' ' + module_path+' '+'--input_dir'+' '+input_dir+' '+'--output_dir'+' '+output_dir
-       os.system(predict_similarity_command)
 
-
-       #device_id = 0 
-       #cuda = 'true'
-       #model_name = 'neural_network'
-       #atom_type = 'fullatom'
-
-       #similarity_module.run_predictions(input_dir,output_dir,atom_type,model_name,device_id,cuda)
-       
-       #atom_type ='mainchain'
-       
-       #similarity_module.run_predictions(input_dir,output_dir,atom_type,model_name,device_id,cuda)
 

@@ -1,11 +1,14 @@
 numpy
+pymeshlab
+trimesh
+scipy
 pandas
 matplotlib
 seaborn
-spicy
 tqdm
 scikit-learn
 potpourri3d
 robust_laplacian
 pymeshfix 
-vedo
+tqdm
+scikit-learn
