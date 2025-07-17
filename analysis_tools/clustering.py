@@ -24,18 +24,7 @@ def load_off_mesh(file_path):
     """Load a .off file and return the mesh."""
     return trimesh.load(file_path, file_type='off')
 
-def find_minimum_distance(mesh1, mesh2):
-    """Find the minimum distance between two meshes."""
-    # Get the vertices of each mesh
-    vertices1 = mesh1.vertices
-    vertices2 = mesh2.vertices
-    
-    # Use a KDTree for efficient nearest neighbor search
-    tree = KDTree(vertices2)
-    distances, _ = tree.query(vertices1)
-    
-    # Return the minimum distance
-    return np.min(distances)
+
 def get_pairs(arr):
     pairs = []
     for i in range(len(arr)):

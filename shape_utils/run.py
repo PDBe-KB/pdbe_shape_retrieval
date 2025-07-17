@@ -11,7 +11,7 @@ from shape_utils.functional_maps import calculate_functional_maps
 from shape_utils.meshes import fix_mesh, remove_until_vertex
 from shape_utils.utils import save_data_to_csv, save_list_to_csv, find_minimum_distance_meshes
 from shape_utils.zernike_descr import get_inv, plytoobj, predict_similarity
-from shape_utils.similarity_scores import calculate_geodesic_norm_score
+from shape_utils.similarity_scores import calculate_geodesic_norm_score,predict_similarity_zernike
 
 #import pandas as pd
 #import matplotlib.pyplot as plt
@@ -156,11 +156,6 @@ def main():
         required=False,
     )
 
-    parser.add_argument(
-        "--models_zernike",
-        type=str,
-        help="Path to Best models for neural network and similarity scores of Zernike descriptors",
-    )
   
     args = parser.parse_args()
     
@@ -301,7 +296,7 @@ def main():
             
                     get_inv(args.input_mesh1,args.entry_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
                     get_inv(args.input_mesh2,args.entry_ids[1],args.map2zernike_binary, args.obj2grid_binary,args.output)
-                
+                predict_similarity_zernike(args.output,args.output)
             except Exception as e:
                 logging.error(
                     "something went wrong, check that mesh file is well-conditioned and map2zernike or obj2grid binaries are working properly  "
