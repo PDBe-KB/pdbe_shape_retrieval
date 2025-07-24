@@ -1,0 +1,4 @@
+Query	Target	Dis-similarity Probability
+6mkg	6mkg	0.0
+6mkg	6mka	0.502
+6mka	6mka	0.0
