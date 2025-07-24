@@ -58,11 +58,17 @@ def read_ply(fn):
 
 def read_dataset(input_dir,db_structures, atom_type):
     dataset = {}
+    
     for struct in db_structures:
+        
         if atom_type == 'mainchain':
-            _3dzd = read_inv(input_dir + struct + '_cacn.inv')
+            descriptors_file = os.path.join(input_dir,struct+ '_cacn.inv')
+            _3dzd = read_inv(descriptors_file)
+            #_3dzd = read_inv(input_dir + struct + '_cacn.inv')
         else:
-            _3dzd = read_inv(input_dir + struct + '.inv')
+            descriptors_file = os.path.join(input_dir,struct+ '.inv')
+            _3dzd = read_inv(descriptors_file)
+            #_3dzd = read_inv(input_dir + struct + '.inv')
 
         #_vertex = read_ply(input_dir + struct + '.ply')
         data = {}
@@ -99,7 +105,8 @@ def pairs_to_features(pairs,alpha_data,scope_data):
         #element_faces_1.append(element_face_1)
         #element_vertices_2.append(element_vertex_2)
         #element_faces_2.append(element_face_2)
-
+    _3DZD_vectors_1 = np.array(_3DZD_vectors_1)
+    _3DZD_vectors_2 = np.array(_3DZD_vectors_2)
     _3DZD_vectors_1 = FloatTensor(_3DZD_vectors_1).squeeze()
     #element_vertices_1 = FloatTensor(element_vertices_1)
     #element_faces_1 = FloatTensor(element_faces_1)
@@ -153,7 +160,8 @@ def predict_similarity_zernike(input_dir,output_dir,model_type='simple_euclidean
         outputs = model(inputs_1, inputs_2, True)
         outputs = outputs.squeeze().cpu().data.numpy().tolist()
 
-    with open(output_dir + atom_type + '_prediction.txt','w') as fh:
+    output_scores_file = os.path.join(output_dir,atom_type+'_prediction.txt') 
+    with open(output_scores_file,'w') as fh:
         fh.write('Query\tTarget\tDis-similarity Probability\n')
         #for i in range(0,len(outputs)):                                                                               
         for pair,score in zip(my_pairs,outputs):

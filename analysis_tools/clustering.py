@@ -1,29 +1,19 @@
-import trimesh
 import numpy as np
-from scipy.spatial import KDTree
-from scipy.spatial.distance import squareform
-import argparse
-import logging
+import pandas as pd
 
-from matplotlib import pyplot as plt
-
+from scipy.linalg import norm
 from scipy.cluster.hierarchy import dendrogram
 from sklearn.cluster import AgglomerativeClustering
 from sklearn import cluster
-import matplotlib as mpl
-from matplotlib import pyplot as plt
-import matplotlib.ticker as mticker
 from scipy.cluster.hierarchy import dendrogram, from_mlab_linkage, cut_tree, leaves_list, set_link_color_palette, to_tree, fcluster
 from scipy.spatial.distance import squareform, pdist
 from sklearn.metrics import silhouette_samples
 import scipy.stats as st
-import pandas as pd
 
+from itertools import combinations_with_replacement
 
-def load_off_mesh(file_path):
-    """Load a .off file and return the mesh."""
-    return trimesh.load(file_path, file_type='off')
-
+def get_pairs_fast(arr):
+    return list(combinations_with_replacement(arr, 2))
 
 def get_pairs(arr):
     pairs = []
@@ -32,14 +22,74 @@ def get_pairs(arr):
             if i <= j:
                 pairs.append((arr[i], arr[j]))
     return pairs
-def get_sym_square_matrix(dim,pairs_array):
+def compute_scores_sym_matrix(scores_file, entries_file):
+    scores_file=open(scores_file)
+    scores_entries = scores_file.read().splitlines()
+    entries_file = open(entries_file).read().splitlines()
+    entry_labels = [s.split(' ')[0] for s in entries_file]
+    
+    #Derive dimension of the score matrix from the list of points
+    dim = len(entry_labels)
+    #Read list of elements and compute pairs 
+    pairs_entries = get_pairs_fast(entry_labels)
+    #print(entry_labels)
+    #print(len(pairs_entries))
+    axes_labels = []
+    for label in entry_labels:
+        axes_labels.append(label)
+
+    scores = []
+
+    for j in pairs_entries:
+        j_inv = (j[1],j[0])
+        for line in scores_entries:
+            p = line.split()
+            pair_score = (p[0],p[1])
+            score = p[2] 
+            if j==pair_score or j_inv==pair_score:
+                scores.append(score)
     sym_matrix = np.zeros((dim, dim))
     row, col = np.triu_indices(dim)  # Upper triangular indices
-    sym_matrix[row, col] = pairs_array
-    sym_matrix[col, row] = pairs_array
+    sym_matrix[row, col] = scores
+    sym_matrix[col, row] = scores
+   
+    return sym_matrix, axes_labels
 
-    return sym_matrix
+def compute_scores_sym_matrix_fast(scores_file, entries_file):
+    
+    entries_file = open(entries_file).read().splitlines()
+    entry_labels = [s.split(' ')[0] for s in entries_file]
 
+    dim = len(entry_labels)
+    label_to_idx = {label: idx for idx, label in enumerate(entry_labels)}
+
+    # Initialize the symmetric matrix
+    sym_matrix = np.zeros((dim, dim))
+
+    # Build a dictionary for fast lookup
+    scores_dict = {}
+    with open(scores_file) as f:
+        for line in f:
+            p1, p2, score = line.strip().split()
+            score = float(score)
+            scores_dict[(p1, p2)] = score
+            scores_dict[(p2, p1)] = score  # Enforce symmetry in lookup
+
+    # Get pairs (upper triangle including diagonal)
+    pairs_entries = get_pairs(entry_labels)
+
+    # Fill the matrix using pairs
+    for (p1, p2) in pairs_entries:
+        if (p1, p2) in scores_dict:
+            i = label_to_idx[p1]
+            j = label_to_idx[p2]
+            sym_matrix[i, j] = scores_dict[(p1, p2)]
+            sym_matrix[j, i] = scores_dict[(p1, p2)]  # Enforce symmetry
+        else:
+            # Optional: Handle missing pairs if needed (e.g., assign zero or NaN)
+            pass
+
+    return sym_matrix, entry_labels    
 
 
 def linkage_matrix(model):
@@ -145,48 +195,42 @@ def find_optimal_num_clusters(model, dist, max_k=10, ktype="d",k=None):
 
     return k
 
-def main():
-
-    parser = argparse.ArgumentParser()
-    
-    parser.add_argument(
-        "-i",
-        "--input_pairs_dist",
-        help="input file containing the pairs labels and distance/score  ",
-        required=True,
+def compute_clusters(sym_matrix,threshold,axes_labels,cluster,linkage_method="ward"):
+    if linkage_method == "average":
+        average_linkage_average = cluster.AgglomerativeClustering(
+        linkage=linkage_method,
+        metric = 'precomputed',
+        compute_distances = True,
+        compute_full_tree = True, 
+        distance_threshold = threshold,
+        n_clusters= None,
     )
+    if linkage_method == "ward":
+        average_linkage_average = cluster.AgglomerativeClustering(
+            linkage='ward',
+            compute_distances = True,
+            compute_full_tree = True, 
+            distance_threshold = threshold,
+            n_clusters= None,
+        )
 
-    args = parser.parse_args()
+    clustering_av = average_linkage_average.fit(sym_matrix)
+    k = clustering_av.n_clusters_
+
+    #print('no. of clusters',clusters)
+    link_matrix = linkage_matrix(clustering_av)
+    clustering_inds = fcluster(link_matrix, k, criterion="maxclust")
+    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    for i, v in enumerate(clustering_inds):
+        clusters[v].append(i)
+
+    clusters_all = []
+    for i in range(1,len(clusters)+1):
+        cluster_entries = []
+        cluster = clusters[i]
+        for j in cluster:
+            #print(axes_labels[j])
+            cluster_entries.append(axes_labels[j])  
+        clusters_all.append(cluster_entries)
     
-    pocket_meshes_list = open(str(args.input_list_meshes))
-
-    list_pockets = pocket_meshes_list.read().splitlines()
-    list_labels = []
-
-    for entry in list_pockets:
-        entry_label = entry[:-4]
-        list_labels.append(entry_label)
-
-    dim = len(list_labels)
-
-    pocket_pairs=get_pairs(list_pockets)
-    print(len(pocket_pairs))
-    min_distance_pockets = []
-    for pair in pocket_pairs:
-        # Load the meshes
-        mesh1 = load_off_mesh(pair[0])
-        mesh2 = load_off_mesh(pair[1])   
-
-        # Calculate minimum distance
-        min_distance = find_minimum_distance(mesh1, mesh2)
-        min_distance_pockets.append(min_distance)
-        print(f"The minimum distance between the meshes is: {min_distance}")
-
-    sym_matrix = np.zeros((dim, dim))
-    row, col = np.triu_indices(dim)  # Upper triangular indices
-    sym_matrix[row, col] = min_distance_pockets
-    sym_matrix[col, row] = min_distance_pockets
-
-    print(sym_matrix)
-if "__main__" in __name__:
-    main()
+    return clusters_all,k,link_matrix
