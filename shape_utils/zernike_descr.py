@@ -16,61 +16,74 @@
 # convert pdb file to triangulation data and do 3dzd calculation
 
 import os
+import shutil
 import importlib.util  
 import importlib.util 
+import subprocess
+import os
+import logging
+
 
 def get_inv(obj_file,fileid,map3dz_binary, obj2grid_binary,output_dir):
-	
-    # generate 3dzd
+        """
+        Generates Zernike moments in .inv file from a 3D OBJ mesh file by converting it to a grid 
+        and applying 3D-Surface binary map3dz (Kihara's lab).
 
-    cp_command = 'cp ' + obj_file + ' ./' + fileid + '.obj'
-    #print(cp_command)
-    os.system(cp_command)
+        Args:
 
-    grid_command = obj2grid_binary+' '+'-g 64  ./' + fileid + '.obj'
-    #print(grid_command)
-    os.system(grid_command)
-    
-    inv_command =  map3dz_binary +' '+ fileid + '.obj.grid -c 0.5 '#--save-moments'
-    #print(inv_command)
-    os.system(inv_command)
-    
-    mv_command = 'mv ' + fileid + '.obj.grid.inv ' + fileid + '.inv'
-    #print(mv_command)
-    os.system(mv_command)
+        obj_file (str): Path to the input mesh OBJ file.         
+        fileid (str): Identifier used for naming output files.
+        map3dz_binary (str): Path to the `map3dz` binary executable.
+        obj2grid_binary (str): Path to the `obj2grid` binary executable.
+        output_dir (str): Path to directory where output files will be stored.
 
-    mv_command = 'mv ' + fileid + '.* ' + output_dir
-    os.system(mv_command)
-    #rm_command = 'rm ' + output_dir + fileid + '.obj'
-    #print(rm_command)                                                                                              
-    #os.system(rm_command)
-    #rm_command = 'rm ' + output_dir + fileid + '.obj.grid'
-    #print(rm_command)
-    #os.system(rm_command)
+        Raises:
+        FileNotFoundError:
+            If the input OBJ file or binaries do not exist.
+        subprocess.CalledProcessError:
+            If `obj2grid` or `map3dz` fails.
+        OSError:
+            If renaming or deleting temporary files fails.
+        """
+
+        obj_output = os.path.join(output_dir,"{}.obj".format(fileid))
+        
+
+        # --- 1. COPY OBJ FILE -------------------------------------------------
+        if not os.path.abspath(obj_file) == os.path.abspath(obj_output):
+                shutil.copy(obj_file, obj_output)
+        else:
+                logging.info("Skipping copy: source and destination are identical.")
+                print("Skipping copy: source and destination are identical.")
+
+        # --- 2. RUN obj2grid --------------------------------------------------
+        subprocess.run(
+            [obj2grid_binary, "-g", "64", str(obj_output)],
+           check=True
+        )
+        
+        # generate 3dzd
+        # --- 3. RUN map3dz ----------------------------------------------------
+        grid_file = os.path.join(output_dir,"{}.obj.grid".format(fileid))
+        
+        subprocess.run(
+            [map3dz_binary, f"{grid_file}", "-c", "0.5"],
+            check=True
+        )
+
+        # --- 4. RENAME .inv FILE ----------------------------------------------
+        
+        inv_file = grid_file+".inv"
+        final_inv = os.path.join(output_dir,"{}.inv".format(fileid))
+        os.rename(inv_file, final_inv)
+
+        # Delete .obj and .grid files from output folder
+        if not os.path.abspath(obj_file) == os.path.abspath(obj_output):
+                os.remove(obj_output)
+        os.remove(grid_file)                
 
 
 
-def plytoobj(filename,output_dir):
-        print(filename[:-4] )
-        obj_filename = filename[:-4] + '.obj'
-        obj_file = open(obj_filename, 'w')
-
-        with open(filename) as ply_file:
-                ply_file_content = ply_file.read().split('\n')[:-1]
-                for content in ply_file_content:
-                        content_info = content.split()
-                        print(len(content_info))
-                        if len(content_info) == 6 and content[0:3] != 'obj':
-                                vertex_info = 'v ' + ' '.join(content_info[0:3])
-                                obj_file.write(vertex_info + '\n')
-                        elif len(content_info) == 7 or len(content_info) == 4:
-                                vertex1, vertex2, vertex3 = map(int, content_info[1:4])
-                                vertex1, vertex2, vertex3 = vertex1 + 1, vertex2 + 1, vertex3 + 1
-                                face_info = 'f ' + str(vertex1) + ' ' + str(vertex2) + ' ' + str(vertex3)
-                                obj_file.write(face_info + '\n')
-
-                obj_file.close()
-        return obj_filename
 
 
 

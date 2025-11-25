@@ -3,11 +3,6 @@ import logging
 
 logger = logging.getLogger()
 
-def visu(vertices):
-    
-    min_coord,max_coord = np.min(vertices,axis=0,keepdims=True),np.max(vertices,axis=0,keepdims=True)
-    cmap = (vertices-min_coord)/(max_coord-min_coord)
-    return cmap
 
 def calculate_functional_maps(model,n_cpus = 1, refine= None):
     """                                                                                                                                                                                

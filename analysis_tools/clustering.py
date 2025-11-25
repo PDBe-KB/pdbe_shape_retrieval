@@ -9,7 +9,7 @@ from scipy.cluster.hierarchy import dendrogram, from_mlab_linkage, cut_tree, lea
 from scipy.spatial.distance import squareform, pdist
 from sklearn.metrics import silhouette_samples
 import scipy.stats as st
-
+import itertools
 from itertools import combinations_with_replacement
 
 def get_pairs_fast(arr):
@@ -91,6 +91,39 @@ def compute_scores_sym_matrix_fast(scores_file, entries_file):
 
     return sym_matrix, entry_labels    
 
+def compute_partial_scores_matrix_fast(scores_file, entries_file, fill_value=0.0):
+    # Read entry labels (subset allowed)
+    with open(entries_file) as f:
+        entry_labels = [line.split()[0] for line in f]
+    
+    dim = len(entry_labels)
+    label_to_idx = {label: idx for idx, label in enumerate(entry_labels)}
+
+    sym_matrix = np.full((dim, dim), fill_value, dtype=float)
+
+    # Build score dictionary, but skip scores not in subset
+    scores_dict = {}
+    with open(scores_file) as f:
+        for line in f:
+            parts = line.strip().split()
+            if len(parts) != 3:
+                continue
+            p1, p2, score = parts
+            if p1 not in label_to_idx or p2 not in label_to_idx:
+                continue  # skip scores involving labels outside subset
+            score = float(score)
+            scores_dict[(p1, p2)] = score
+            scores_dict[(p2, p1)] = score
+
+    # Fill matrix
+    for p1, p2 in itertools.combinations_with_replacement(entry_labels, 2):
+        if (p1, p2) in scores_dict:
+            score = scores_dict[(p1, p2)]
+            i, j = label_to_idx[p1], label_to_idx[p2]
+            sym_matrix[i, j] = score
+            sym_matrix[j, i] = score
+
+    return sym_matrix, entry_labels
 
 def linkage_matrix(model):
     # Create linkage matrix and then plot the dendrogram
@@ -195,7 +228,7 @@ def find_optimal_num_clusters(model, dist, max_k=10, ktype="d",k=None):
 
     return k
 
-def compute_clusters(sym_matrix,threshold,axes_labels,cluster,linkage_method="ward"):
+def compute_clusters(sym_matrix,axes_labels,cluster,linkage_method="ward", threshold=None,no_clusters=None):
     if linkage_method == "average":
         average_linkage_average = cluster.AgglomerativeClustering(
         linkage=linkage_method,
@@ -203,18 +236,22 @@ def compute_clusters(sym_matrix,threshold,axes_labels,cluster,linkage_method="wa
         compute_distances = True,
         compute_full_tree = True, 
         distance_threshold = threshold,
-        n_clusters= None,
+        n_clusters= no_clusters,
     )
     if linkage_method == "ward":
         average_linkage_average = cluster.AgglomerativeClustering(
             linkage='ward',
             compute_distances = True,
             compute_full_tree = True, 
-            distance_threshold = threshold,
-            n_clusters= None,
+            distance_threshold = None,
+            n_clusters= no_clusters,
         )
+    
 
     clustering_av = average_linkage_average.fit(sym_matrix)
+    k = clustering_av.n_clusters_
+    threshold_dist = average_linkage_average.distances_[-(k-1)]
+    
     k = clustering_av.n_clusters_
 
     #print('no. of clusters',clusters)
@@ -233,4 +270,28 @@ def compute_clusters(sym_matrix,threshold,axes_labels,cluster,linkage_method="wa
             cluster_entries.append(axes_labels[j])  
         clusters_all.append(cluster_entries)
     
-    return clusters_all,k,link_matrix
+    return clusters_all,k,link_matrix,threshold_dist
+
+def compute_volumes_pockets(volumes_file, entries_cluster):
+    volumes_file = open(volumes_file)
+    volumes_pockets = volumes_file.read().splitlines()
+    entry_labels = entries_cluster
+    
+    #Derive dimension of the score matrix from the list of points
+    dim = len(entry_labels)
+    
+    axes_labels = []
+    for label in entry_labels:
+        axes_labels.append(label)
+
+    vol_pockets = []
+
+    for j in entry_labels:
+        for line in volumes_pockets:
+            p = line.split()
+            pocket_entry = p[0]
+            pocket_volume = p[1] 
+            if j==pocket_entry :
+                vol_pockets.append([pocket_entry,pocket_volume])   
+
+    return vol_pockets

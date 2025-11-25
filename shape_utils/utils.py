@@ -63,7 +63,19 @@ def save_list_to_csv(data, output_file):
 
         return None
 def find_minimum_distance_meshes(mesh1, mesh2):
-    """Find the minimum distance between two meshes."""
+    """
+    Compute the minimum Euclidean distance between two meshes.
+
+    Args:
+        mesh1: A mesh object with a `vertlist` attribute containing vertex coordinates 
+               as an (N, 3) array.
+        mesh2: A mesh object with a `vertlist` attribute containing vertex coordinates 
+               as an (M, 3) array.
+
+    Returns:
+        float: The minimum Euclidean distance between any vertex of `mesh1` and any 
+               vertex of `mesh2`.
+    """
     # Get the vertices of each mesh
     vertices1 = mesh1.vertlist
     vertices2 = mesh2.vertlist

@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from itertools import combinations_with_replacement
 
 def calculate_geodesic_norm_score(FM):
     """                                                                                                                                                                                
@@ -21,10 +22,29 @@ def calculate_geodesic_norm_score(FM):
     """  
     
     eigenvalues_FM = np.linalg.eigvals(FM)
-    score = np.sqrt(np.sum(np.log(np.absolute(np.real(eigenvalues_FM))) ** 2))
+    eps = 1e-12  # avoid log(0)
+    score = np.sqrt(np.sum(np.log(np.absolute(np.real(eigenvalues_FM))+ eps) ** 2))
 
     return score 
 
+def get_pairs_fast(arr):
+    """
+    Generate all unique pairs (including self-pairs) from a list or array.
+
+    Args:
+        arr (list or array-like): Input list or array of elements.
+
+    Returns:
+        list of tuples: A list containing tuples of all unique pairs. Each tuple 
+                        is of the form `(a, b)` where `a` and `b` are elements 
+                        from `arr`.
+
+    Example:
+        get_pairs_fast([1, 2, 3])
+        [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
+    """
+     
+    return list(combinations_with_replacement(arr, 2))
 
 def get_pairs(arr):
     pairs = []
@@ -41,20 +61,6 @@ def read_inv(fn):
         vectors.append(float(line.strip()))
     f.close()
     return vectors[1::]
-def read_ply(fn):
-    element_vertex = None
-    element_face = None
-    f = open(fn, 'r')
-    for line in f:
-        line = line.strip()
-        if 'element vertex' in line:
-            element_vertex = int(line.split()[-1])
-        if 'element face' in line:
-            element_face = int(line.split()[-1])
-        if element_vertex != None and element_face != None:
-            return [element_vertex, element_face]
-    f.close()
-    return [element_vertex, element_face]
 
 def read_dataset(input_dir,db_structures, atom_type):
     dataset = {}
@@ -143,12 +149,12 @@ def predict_similarity_zernike(input_dir,output_dir,model_type='simple_euclidean
     db_structures = [x.split('.')[0] for x in db_structures]
     print('pdb to compare : ',len(db_structures))
     if len(db_structures) == 0:
-        print('There are no structure to compare.')
+        print('There are no structures to compare.')
         exit()
 
     database_dataset = read_dataset(input_dir,db_structures,atom_type)
     #query_pdb = db_structures[0]                                                                                      
-    my_pairs = get_pairs(db_structures)
+    my_pairs = get_pairs_fast(db_structures)
     #my_pairs = [(query_pdb, j) for j in db_structures]                                                                
     inputs_1, inputs_2 = pairs_to_features(my_pairs,database_dataset,database_dataset)
     if cuda:
@@ -167,7 +173,5 @@ def predict_similarity_zernike(input_dir,output_dir,model_type='simple_euclidean
         for pair,score in zip(my_pairs,outputs):
             fh.write(pair[0] + '\t' + pair[1] + '\t' +str(round(score,3)) + '\n')
             #fh.write(db_structures[0] + '\t' + db_structures[i] + '\t' +str(round(outputs[i],3)) + '\n')              
-
-
 
 

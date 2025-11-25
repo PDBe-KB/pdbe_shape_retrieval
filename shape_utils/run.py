@@ -10,7 +10,7 @@ from shape_utils.spectral_descr import calculate_descriptors
 from shape_utils.functional_maps import calculate_functional_maps
 from shape_utils.meshes import fix_mesh, remove_until_vertex
 from shape_utils.utils import save_data_to_csv, save_list_to_csv, find_minimum_distance_meshes
-from shape_utils.zernike_descr import get_inv, plytoobj, predict_similarity
+from shape_utils.zernike_descr import get_inv
 from shape_utils.similarity_scores import calculate_geodesic_norm_score,predict_similarity_zernike
 
 #import pandas as pd
@@ -29,13 +29,13 @@ def main():
 
     parser.add_argument(
         "--input_mesh1",
-        help="Input triangulated mesh 1",
+        help="Input path to triangulated mesh file 1",
         required=True,
     )
 
     parser.add_argument(
         "--input_mesh2",
-        help="Input triangulated mesh 2",
+        help="Input path to triangulated mesh file 2",
         required=True,
     )
     parser.add_argument(
@@ -123,7 +123,7 @@ def main():
     parser.add_argument(
         "--descr",
         type=str,
-        help="Type of descriptor to calculate: WKS,HKS,Zernike",
+        help="Type of descriptor to calculate: WKS,HKS,3DZD",
         default='WKS',
     )
     
@@ -160,11 +160,6 @@ def main():
     args = parser.parse_args()
     
 
-    #if args.descr =='WKS':
-    #    parameter_descr = 'energy'
-    #if args.descr == 'HKS':
-    #    parameter_descr = 'time'
-
     entry_id_1 = args.entry_ids[0]
     entry_id_2 = args.entry_ids[1]
     mesh1_file = args.input_mesh1
@@ -174,32 +169,36 @@ def main():
 
     if reconstruct and not args.fix_meshes:
         logging.error(
-                    "--recontruct_mesh needs to be used with --fix_meshes flag  "
+                    "--reconstruct_mesh must be used together with the --fix_meshes flag."
                 )
     if args.collapse_vertices and not args.fix_meshes:
         logging.error(
-                    "--collapse_vertices needs to be used with --fix_meshes flag  "
+                    "--collapse_vertices must be used with --fix_meshes flag  "
                 )
-
+    #Repair common mesh defects using PyMeshFix,
+    #and optionally collapses vertices to reduce mesh resolution
     if args.fix_meshes :
         
         v_1,f_1=fix_mesh(mesh1_file,resolution,args.collapse_vertices,reconstruct)
         v_2,f_2=fix_mesh(mesh2_file,resolution,args.collapse_vertices,reconstruct) 
-        
+        logging.info("Repairing meshes: {} and {}".format(mesh1_file,mesh2_file))
+    #Compute minimum distance between two meshes   
     if args.min_dist_mesh :
        if args.fix_meshes:
-             mesh1 = mesh.TriMesh(v_1, f_1)
-             mesh2 = mesh.TriMesh(v_2, f_2)
+            mesh1 = mesh.TriMesh(v_1, f_1)
+            mesh2 = mesh.TriMesh(v_2, f_2)
        else:
             mesh1 = mesh.TriMesh(args.input_mesh1, area_normalize=False, center=False)
             mesh2 = mesh.TriMesh(args.input_mesh2, area_normalize=False, center=False) 
        
        min_distance = find_minimum_distance_meshes(mesh1,mesh2)
+       logging.info("Minimum distance is:{}".format(min_distance))
        print('Minimum distance is:',min_distance)
     
     if not args.no_shape_retrieval:
 
         if args.descr =='WKS'or args.descr == 'HKS':
+            #Computing Spectral descriptors with pyFM on area normalized meshes
             if args.fix_meshes:
                 mesh1 = mesh.TriMesh(v_1,f_1, area_normalize=True, center=False)
                 mesh2 = mesh.TriMesh(v_2,f_2, area_normalize=True, center=False)
@@ -207,34 +206,30 @@ def main():
                 mesh1 = mesh.TriMesh(args.input_mesh1, area_normalize=True, center=False)
                 mesh2 = mesh.TriMesh(args.input_mesh2, area_normalize=True, center=False)
 
-            #ouput files with descriptors and parameters list for structure 1 and structure 2
+            
+            #Ouput files with descriptors
 
-            #param_list_file = "{}_{}_{}_list.csv".format(parameter_descr,args.descr,entry_id_1,args.descr,entry_id_2)
             descr1_file = "{}_descr_{}.csv".format(args.descr,entry_id_1)
             descr2_file = "{}_descr_{}.csv".format(args.descr,entry_id_2)
 
             output_file_1 = os.path.join(args.output,descr1_file)
             output_file_2 = os.path.join(args.output,descr2_file)
-            #output_file_3 = os.path.join(args.output,param_list_file)
-
-            logging.info(f"Calculating {args.descr} descriptors for structures {entry_id_1} and {entry_id_2}")
-
+            
+            #Setting model for WKS/Hks descriptors in pyFM
             model = functional.FunctionalMapping(mesh1,mesh2)
 
             if not os.path.exists(output_file_1) or not os.path.exists(output_file_2):
-            
+                logging.info(f"Calculating {args.descr} descriptors for structures {entry_id_1} and {entry_id_2}")
+                
                 descr1,descr2 = calculate_descriptors(model,args.neigvecs,args.n_ev,args.ndescr,args.step,args.landmarks,args.output,args.descr)
                 data1 = np.array(descr1)
                 data2 = np.array(descr2)
-                #data3 = np.array(paramlist)
-        
+                
                 #save descriptors
                 save_data_to_csv(data1,output_file_1)
                 save_data_to_csv(data2,output_file_2)
 
-                #save parameters list
-                #save_list_to_csv(data3,output_file_3)
-
+            #Ouput files with functional maps and point to point maps
 
             FM_file = "{}_{}_FM.csv".format(entry_id_1,entry_id_2)
             output_FM = os.path.join(args.output,FM_file)
@@ -242,28 +237,33 @@ def main():
             p2p21_file = "{}_{}_p2p21.csv".format(entry_id_1,entry_id_2)
             output_p2p21 = os.path.join(args.output, p2p21_file)
 
-            #compute correspondance matrix, shape difference matrix and p2p21         
+            #Computing correspondence matrix  and point to point map p2p21 (if not already calculated)
+            # Point to point map defined from mesh2 to mesh1
+                    
             if os.path.exists(output_FM) and os.path.exists(output_p2p21):
                 with open(output_FM) as FMfile:
                     FM = list(csv.reader(FMfile))
                     FM = np.asarray(FM, dtype=float)
+                #Calculating similarity score
                 score_geodesic_norm_eigenvalues = calculate_geodesic_norm_score(FM)
+                logging.info("Shspe Disimilarity score is::{}".format(score_geodesic_norm_eigenvalues))
                 print('Disimilarity score is:',score_geodesic_norm_eigenvalues)
-
+                
             if not os.path.exists(output_FM) or not os.path.exists(output_p2p21):
 
                 p2p21, FM = calculate_functional_maps(model,args.n_cpus,refine = args.refine)
         
                 score_geodesic_norm_eigenvalues = calculate_geodesic_norm_score(FM)
-            
+                
                 #save correspondence matrix and point to point map
                 save_data_to_csv(FM,output_FM)
                 save_list_to_csv(p2p21,output_p2p21)
 
-                print('Disimilarity score is:',score_geodesic_norm_eigenvalues)
-           
+                print('Disimilarity_score is:',score_geodesic_norm_eigenvalues)
+        
+        #Computing Zernike descriptors  
         elif args.descr =='3DZD':
-
+            #Check paths to 3DZD binaries required to calculate descriptors
             if not "map2zernike" and not os.path.isfile(args.map2zernike_binary):
             
                 raise Exception(f"map2zernike binary not found or path not provided: {args.map2zernike_binary}")
@@ -276,10 +276,13 @@ def main():
                 if args.fix_meshes:
                     mesh_1 = trimesh.Trimesh(vertices=v_1, faces=f_1)
                     mesh_2 = trimesh.Trimesh(vertices=v_2, faces=f_2)
+                    #Save fixed meshes
                     output1_obj=os.path.join(args.output,'{}_fixed.obj'.format(entry_id_1))
                     output2_obj=os.path.join(args.output,'{}_fixed.obj'.format(entry_id_2))
                     mesh_1.export(output1_obj)
-                    mesh_1.export(output2_obj)
+                    mesh_2.export(output2_obj)
+
+                    #Remove headers in OBJ mesh files to run 3DZD binaries 
                     remove_until_vertex(output1_obj)
                     remove_until_vertex(output2_obj)
                     get_inv(output1_obj,args.entry_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
@@ -288,23 +291,27 @@ def main():
                 else:
                     _, ext1 = os.path.splitext(args.input_mesh1)
                     _, ext2 = os.path.splitext(args.input_mesh2)
+
                     if ext1.lower() != '.obj' or ext2.lower() != '.obj':
-                        raise Exception("Zernike descriptors take '.obj' files as input, try option --fix_meshes to compute them"
-                    )
+                        raise Exception("Zernike descriptors take '.obj' files as input.")
+                    
+                    #Remove headers in OBJ mesh files to run 3DZD binaries 
                     remove_until_vertex(args.input_mesh1)
                     remove_until_vertex(args.input_mesh2)
             
                     get_inv(args.input_mesh1,args.entry_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
                     get_inv(args.input_mesh2,args.entry_ids[1],args.map2zernike_binary, args.obj2grid_binary,args.output)
-                predict_similarity_zernike(args.output,args.output)
+                
+                #predict_similarity_zernike(args.output,args.output)
+
             except Exception as e:
                 logging.error(
-                    "something went wrong, check that mesh file is well-conditioned and map2zernike or obj2grid binaries are working properly  "
+                    "something went wrong, check that mesh file is well-conditioned with valid header and map2zernike or obj2grid binaries are working properly  "
                 )
                 logging.error(e)
             
         else :
-            print('Descriptor not yet implemented')
+            print('Descriptor type not yet implemented')
     
 
 if __name__ == "__main__":

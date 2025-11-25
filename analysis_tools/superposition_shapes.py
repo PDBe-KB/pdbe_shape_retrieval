@@ -32,7 +32,7 @@ def optimal_rotation_translation(A: np.ndarray, B: np.ndarray, allow_mirror: boo
         
     R = optimal_rotation(A - cA, B - cB, allow_mirror=allow_mirror, weights=weights)
     t = np.matmul(R, -cA) + cB
-    return t
+    return R,t
 def optimal_rotation(A: np.ndarray, B: np.ndarray, allow_mirror: bool=False, weights: np.ndarray=None) -> np.ndarray:
     ''' A, B - matrices 3*n, weights - vector n, result - matrix 3*3
     Find the optimal rotation matrix for 3D superimposition of A onto B,
@@ -40,19 +40,47 @@ def optimal_rotation(A: np.ndarray, B: np.ndarray, allow_mirror: bool=False, wei
     If allow_mirror == True, allow also improper rotation (i.e. mirroring + rotation).
     '''
 
-    print('still here...')
+    
     if weights is not None:
         A = A * weights.reshape((1, -1))
-    #A= torch.from_numpy(A)
-    #B_T = torch.from_numpy(B.transpose())
     H = A @ B.transpose()
-    print(H)
     U, S, Vh = linalg.svd(H)
     R = (U @ Vh).transpose()
-    if not allow_mirror and numpy.linalg.det(R) < 0:  # type: ignore  # mypy doesn't know .det
+    if not allow_mirror and np.linalg.det(R) < 0:  # type: ignore  # mypy doesn't know .det
         Vh[-1,:] = -Vh[-1,:]
         R = (U @ Vh).transpose()
     return R
+
+def calculate_rotation_translation(mesh1,mesh2,map_p2p):
+    #read point to point correspondances file and save it into a list
+    file_p2p21 = map_p2p
+    with open(file_p2p21) as csvfile:
+           p2p21 = csvfile.read().splitlines()
+           p2p21 = np.asarray(p2p21, dtype=int)
+    list_p2p=p2p21
+
+    #Get lists of vertices for surface 1 and surface 2 using TriMesh from pyFM 
+    vertices_1, vertices_2 = read_vertices(mesh1,mesh2)
+    
+    if len(vertices_2) != len(list_p2p):
+        logging.error(
+                "something went wrong, the number of correspondaces should match the number of vertices in surface 2 "
+            )
+
+    matrix_A = []
+    matrix_B = vertices_2
+
+    for i in list_p2p:
+        point_A = vertices_1[i]
+        matrix_A.append(point_A)
+    matrix_A = np.array(matrix_A)
+    
+    matrix_A = np.transpose(matrix_A)
+    matrix_B = np.transpose(matrix_B)
+
+    R,t = optimal_rotation_translation(matrix_A,matrix_B)
+    
+    return R,t
 
 def main():
     parser = argparse.ArgumentParser()
@@ -72,12 +100,7 @@ def main():
         help="Input triangulated mesh 2",
         required=True,
     )
-    parser.add_argument(
-        "--pdb_ids",
-        nargs="+",
-        help="List of two pdb_ids",
-        required=True,
-    )
+
     args = parser.parse_args()
     
     #read point to point correspondances file and save it into a list
@@ -97,18 +120,18 @@ def main():
 
     matrix_A = []
     matrix_B = vertices_2
-    #print(list_p2p)
+
     for i in list_p2p:
         point_A = vertices_1[i]
         matrix_A.append(point_A)
     matrix_A = np.array(matrix_A)
-
-    #print(len(matrix_A))
-    #print(len(matrix_B))
+    
+    matrix_A = np.transpose(matrix_A)
+    matrix_B = np.transpose(matrix_B)
 
     R,t = optimal_rotation_translation(matrix_A,matrix_B)
-    #print(t)
-    #print(R)
+    print(t)
+    print(R)
 if __name__ == "__main__":
 
     main()
