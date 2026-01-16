@@ -94,8 +94,8 @@ shape_retrieval [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_ME
 Required arguments are :
 
 ```
---input_mesh1             :  Triangulated mesh for structure 1 (.off)
---input_mesh2             :  Triangulated mesh for structure 2 (.off)
+--input_mesh1             :  Triangulated mesh for structure 1 (.obj)
+--input_mesh2             :  Triangulated mesh for structure 2 (.obj)
 --entry_ids               :  Entry IDs for protein structures 
 --output (-o)             :  Output directory
 ```
