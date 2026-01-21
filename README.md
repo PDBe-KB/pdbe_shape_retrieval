@@ -29,9 +29,10 @@ This package requires the installation of [pyFM](https://github.com/RobinMagnet/
 pip install pyfmaps
 ```
 
-For the calculation of Zernike Descriptors, binaries `obj2grid` and `map2zernike` from 3D-Surfer and obj2grid codes need to be provided:
+For the calculation of Zernike Descriptors, binaries `obj2grid` and `map2zernike` from 3D-Surfer and obj2grid codes need to be provided. 
+The binaries are available [here](https://github.com/PDBe-KB/pdbe_shape-retrieval/blob/main/bin)
 
-To make your life easier when running the process, you can set two path environment variables for 3D-Surfer:
+To make your life easier when running the process, it is better to set two path environment variables for 3D-Surfer:
 
 An environment variable to the `obj2grid` binary:
 
@@ -93,8 +94,8 @@ shape_retrieval [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_ME
 Required arguments are :
 
 ```
---input_mesh1             :  Triangulated mesh for structure 1 (.off)
---input_mesh2             :  Triangulated mesh for structure 2 (.off)
+--input_mesh1             :  Triangulated mesh for structure 1 (.obj)
+--input_mesh2             :  Triangulated mesh for structure 2 (.obj)
 --entry_ids               :  Entry IDs for protein structures 
 --output (-o)             :  Output directory
 ```
