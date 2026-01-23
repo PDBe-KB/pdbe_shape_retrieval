@@ -204,12 +204,12 @@ We use [SemVer](https://semver.org) for versioning.
 
 ## Authors
 * [Grisell Diaz Leines](https://github.com/grisell) - Lead developer
-* [Sreenath ](otienoanyango) - Review and productionising
+* [Sreenath ](https://github.com/sreenathnair) - Review and productionising
 
-See all contributors [here](https://github.com/PDBe-KB/pisa-analysis/graphs/contributors).
+See all contributors [here](https://github.com/PDBe-KB/pdbe_shape_retrieval/graphs/contributors).
 
 ## License
 
-See  [LICENSE](https://github.com/PDBe-KB/pisa-analysis/blob/main/LICENSE)
+See  [LICENSE](https://github.com/PDBe-KB/pdbe_shape_retrieval/blob/main/LICENSE)
 
 ## Acknowledgements
