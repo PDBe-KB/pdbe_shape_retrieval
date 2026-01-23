@@ -82,6 +82,28 @@ def calculate_rotation_translation(mesh1,mesh2,map_p2p):
     
     return R,t
 
+def calculate_rotation_translation_fixed(mesh1, mesh2, map_p2p):
+
+    # Read p2p map (assume 1-based!)
+    list_p2p = np.loadtxt(map_p2p, dtype=int) - 1
+
+    vertices_1, vertices_2 = read_vertices(mesh1, mesh2)
+
+    if len(vertices_2) != len(list_p2p):
+        raise ValueError("Number of correspondences must equal number of vertices in mesh2")
+
+    # Build correspondence matrices
+    A = vertices_2  # TARGET points
+    B = vertices_1[list_p2p]  # SOURCE points mapped from target
+
+    # Transpose to 3xn
+    A = A.T
+    B = B.T
+
+    # Compute transform to map TARGET -> SOURCE
+    R, t = optimal_rotation_translation(A, B)
+
+    return R, t
 def main():
     parser = argparse.ArgumentParser()
 

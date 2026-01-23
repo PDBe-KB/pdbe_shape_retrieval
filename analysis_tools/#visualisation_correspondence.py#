@@ -210,4 +210,4 @@ def visualize_correspondence_aligned(source_path, target_path, map_path, R,t):
         verts_src, faces_src,
         verts_tgt_aligned, faces_tgt,
         colors_src, colors_tgt
-    )
+    )O

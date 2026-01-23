@@ -1,3 +1,8 @@
+imageio
+pythreejs
+ipywidgets
+pyfmaps
+setuptools
 numpy
 pymeshlab
 trimesh
@@ -12,3 +17,4 @@ robust_laplacian
 pymeshfix 
 tqdm
 scikit-learn
+pyglet
