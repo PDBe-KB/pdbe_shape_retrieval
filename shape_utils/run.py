@@ -162,10 +162,15 @@ def main():
 
     entry_id_1 = args.entry_ids[0]
     entry_id_2 = args.entry_ids[1]
-    mesh1_file = args.input_mesh1
-    mesh2_file = args.input_mesh2
+    mesh1_file = args.mesh1
+    mesh2_file = args.mesh2
     resolution = args.resolution
     reconstruct = args.reconstruct_mesh
+
+    if not "map2zernike" and not os.path.isfile(args.zernike_binary):
+        raise Exception(f"zernike binary map2zernike not found or is not a file: {args.zernike_binary}")
+
+
 
     if reconstruct and not args.fix_meshes:
         logging.error(
@@ -183,19 +188,19 @@ def main():
         v_2,f_2=fix_mesh(mesh2_file,resolution,args.collapse_vertices,reconstruct) 
         logging.info("Repairing meshes: {} and {}".format(mesh1_file,mesh2_file))
     #Compute minimum distance between two meshes   
-    if args.min_dist_mesh :
+    if args.mindist :
        if args.fix_meshes:
             mesh1 = mesh.TriMesh(v_1, f_1)
             mesh2 = mesh.TriMesh(v_2, f_2)
        else:
-            mesh1 = mesh.TriMesh(args.input_mesh1, area_normalize=False, center=False)
-            mesh2 = mesh.TriMesh(args.input_mesh2, area_normalize=False, center=False) 
+            mesh1 = mesh.TriMesh(args.mesh1, area_normalize=False, center=False)
+            mesh2 = mesh.TriMesh(args.mesh2, area_normalize=False, center=False) 
        
        min_distance = find_minimum_distance_meshes(mesh1,mesh2)
        logging.info("Minimum distance is:{}".format(min_distance))
        print('Minimum distance is:',min_distance)
     
-    if not args.no_shape_retrieval:
+    if not args.no_shape:
 
         if args.descr =='WKS'or args.descr == 'HKS':
             #Computing Spectral descriptors with pyFM on area normalized meshes
@@ -203,8 +208,8 @@ def main():
                 mesh1 = mesh.TriMesh(v_1,f_1, area_normalize=True, center=False)
                 mesh2 = mesh.TriMesh(v_2,f_2, area_normalize=True, center=False)
             else:    
-                mesh1 = mesh.TriMesh(args.input_mesh1, area_normalize=True, center=False)
-                mesh2 = mesh.TriMesh(args.input_mesh2, area_normalize=True, center=False)
+                mesh1 = mesh.TriMesh(args.mesh1, area_normalize=True, center=False)
+                mesh2 = mesh.TriMesh(args.mesh2, area_normalize=True, center=False)
 
             
             #Ouput files with descriptors
@@ -221,7 +226,7 @@ def main():
             if not os.path.exists(output_file_1) or not os.path.exists(output_file_2):
                 logging.info(f"Calculating {args.descr} descriptors for structures {entry_id_1} and {entry_id_2}")
                 
-                descr1,descr2 = calculate_descriptors(model,args.neigvecs,args.n_ev,args.ndescr,args.step,args.landmarks,args.output,args.descr)
+                descr1,descr2 = calculate_descriptors(model,args.neigvecs,args.nev,args.ndescr,args.step,args.landmarks,args.output,args.descr)
                 data1 = np.array(descr1)
                 data2 = np.array(descr2)
                 
@@ -251,7 +256,7 @@ def main():
                 
             if not os.path.exists(output_FM) or not os.path.exists(output_p2p21):
 
-                p2p21, FM = calculate_functional_maps(model,args.n_cpus,refine = args.refine)
+                p2p21, FM = calculate_functional_maps(model,args.ncpus,refine = args.refine)
         
                 score_geodesic_norm_eigenvalues = calculate_geodesic_norm_score(FM)
                 
@@ -264,9 +269,9 @@ def main():
         #Computing Zernike descriptors  
         elif args.descr =='3DZD':
             #Check paths to 3DZD binaries required to calculate descriptors
-            if not "map2zernike" and not os.path.isfile(args.map2zernike_binary):
+            if not "map2zernike" and not os.path.isfile(args.zernike_binary):
             
-                raise Exception(f"map2zernike binary not found or path not provided: {args.map2zernike_binary}")
+                raise Exception(f"map2zernike binary not found or path not provided: {args.zernike_binary}")
 
             if not "obj2grid" and not os.path.isfile(args.obj2grid_binary):
 
@@ -285,22 +290,22 @@ def main():
                     #Remove headers in OBJ mesh files to run 3DZD binaries 
                     remove_until_vertex(output1_obj)
                     remove_until_vertex(output2_obj)
-                    get_inv(output1_obj,args.entry_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
-                    get_inv(output2_obj,args.entry_ids[1],args.map2zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(output1_obj,args.entryids[0],args.zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(output2_obj,args.entryids[1],args.zernike_binary, args.obj2grid_binary,args.output)
                 
                 else:
-                    _, ext1 = os.path.splitext(args.input_mesh1)
-                    _, ext2 = os.path.splitext(args.input_mesh2)
+                    _, ext1 = os.path.splitext(args.mesh1)
+                    _, ext2 = os.path.splitext(args.mesh2)
 
                     if ext1.lower() != '.obj' or ext2.lower() != '.obj':
                         raise Exception("Zernike descriptors take '.obj' files as input.")
                     
                     #Remove headers in OBJ mesh files to run 3DZD binaries 
-                    remove_until_vertex(args.input_mesh1)
-                    remove_until_vertex(args.input_mesh2)
+                    remove_until_vertex(args.mesh1)
+                    remove_until_vertex(args.mesh2)
             
-                    get_inv(args.input_mesh1,args.entry_ids[0],args.map2zernike_binary, args.obj2grid_binary,args.output)
-                    get_inv(args.input_mesh2,args.entry_ids[1],args.map2zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(args.mesh1,args.entryids[0],args.zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(args.mesh2,args.entryids[1],args.zernike_binary, args.obj2grid_binary,args.output)
                 
                 #predict_similarity_zernike(args.output,args.output)
 
