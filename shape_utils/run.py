@@ -28,18 +28,18 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--input_mesh1",
+        "--mesh1",
         help="Input path to triangulated mesh file 1",
         required=True,
     )
 
     parser.add_argument(
-        "--input_mesh2",
+        "--mesh2",
         help="Input path to triangulated mesh file 2",
         required=True,
     )
     parser.add_argument(
-        "--entry_ids",
+        "--entry-ids",
         nargs="+",
         help="List of two entry ids",
         required=True,
@@ -52,14 +52,14 @@ def main():
     )
 
     parser.add_argument(
-        "--fix_meshes",
+        "--fix-meshes",
         action="store_true", 
         help="Preprocess meshes to be well-conditioned to compute descriptors",
         required=False,
     )
 
     parser.add_argument(
-        "--collapse_vertices",
+        "--collapse-vertices",
         action=argparse.BooleanOptionalAction,
         default = False,
         help="Use decimation quadric edgecollapse to reduce resolution of mesh",
@@ -73,7 +73,7 @@ def main():
     )
 
     parser.add_argument(
-        "--reconstruct_mesh", 
+        "--reconstruct-mesh", 
         action="store_true", 
         default = False,
         help="Reconstruct mesh to create a well-conditioned mesh",
@@ -82,12 +82,12 @@ def main():
 
 
     parser.add_argument(
-        "--map2zernike_binary",
+        "--zernike-binary",
         help="path to map2zernike binary",
         default = 'map2zernike',
     )
     parser.add_argument(
-        "--obj2grid_binary",
+        "--obj2grid-binary",
         help="path to obj2grid binary (needed for Zernike descriptors)",
         default = "obj2grid",
     )
@@ -99,7 +99,7 @@ def main():
         default=200
     )
     parser.add_argument(
-        "--n_ev",
+        "--nev",
         type = int,
         required=False,
         help="The least number of Laplacian eigenvalues to consider for functional map ",
@@ -128,7 +128,7 @@ def main():
     )
     
     parser.add_argument(
-        "--n_cpus",
+        "--ncpus",
         type=int,
         default=def_no_cpu,
         help="Number of threads to be used for this calculation.",
@@ -144,13 +144,13 @@ def main():
     )
 
     parser.add_argument(
-        "--min_dist_mesh", 
+        "--mindist", 
         action="store_true", 
         help="Calculate minimum distance between the two meshes",
         required=False,
     )
     parser.add_argument(
-        "--no_shape_retrieval", 
+        "--no-shape", 
         action="store_true", 
         help="switch off shape retrieval calculation",
         required=False,
