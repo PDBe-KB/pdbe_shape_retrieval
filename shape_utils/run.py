@@ -5,6 +5,8 @@ import logging
 from pyFM import mesh
 from pyFM import functional
 import trimesh
+import os
+import shutil
 
 from shape_utils.spectral_descr import calculate_descriptors
 from shape_utils.functional_maps import calculate_functional_maps
@@ -49,6 +51,13 @@ def main():
         "--output",
         help="Path to output files (descriptors)",
         required=True,
+    )
+
+    parser.add_argument(
+        "--descr",
+        type=str,
+        help="Type of descriptor to calculate: WKS,3DZD",
+        default='WKS',
     )
 
     parser.add_argument(
@@ -102,7 +111,7 @@ def main():
         "--nev",
         type = int,
         required=False,
-        help="The least number of Laplacian eigenvalues to consider for functional map ",
+        help="The number of Laplacian eigenvalues to consider for functional map ",
         default = 50
     )
     parser.add_argument(
@@ -120,12 +129,7 @@ def main():
         help="Input indices of landmarks for spectral descriptors",
         default=None,
     )    
-    parser.add_argument(
-        "--descr",
-        type=str,
-        help="Type of descriptor to calculate: WKS,HKS,3DZD",
-        default='WKS',
-    )
+
     
     parser.add_argument(
         "--ncpus",
@@ -160,6 +164,19 @@ def main():
     args = parser.parse_args()
     
 
+    # Check input mesh files
+    mesh_files = [args.mesh1, args.mesh2]
+
+    for mesh_file in mesh_files:
+        if not (mesh_file and os.path.isfile(mesh_file) and os.access(mesh_file, os.R_OK)):
+          raise Exception(f"Mesh file not found or not readable: {mesh}")
+    
+    #Check entry IDs: must be exactly two
+    if len(args.entry_ids) != 2:
+        raise Exception(
+            f"--entry-ids must contain exactly two values, got {len(args.entry_ids)}."
+        )
+
     entry_id_1 = args.entry_ids[0]
     entry_id_2 = args.entry_ids[1]
     mesh1_file = args.mesh1
@@ -167,15 +184,12 @@ def main():
     resolution = args.resolution
     reconstruct = args.reconstruct_mesh
 
-    if not "map2zernike" and not os.path.isfile(args.zernike_binary):
-        raise Exception(f"zernike binary map2zernike not found or is not a file: {args.zernike_binary}")
-
-
-
     if reconstruct and not args.fix_meshes:
         logging.error(
                     "--reconstruct_mesh must be used together with the --fix_meshes flag."
                 )
+    #collapse vertices of the meshes to reduce resolution 
+
     if args.collapse_vertices and not args.fix_meshes:
         logging.error(
                     "--collapse_vertices must be used with --fix_meshes flag  "
@@ -187,18 +201,19 @@ def main():
         v_1,f_1=fix_mesh(mesh1_file,resolution,args.collapse_vertices,reconstruct)
         v_2,f_2=fix_mesh(mesh2_file,resolution,args.collapse_vertices,reconstruct) 
         logging.info("Repairing meshes: {} and {}".format(mesh1_file,mesh2_file))
+
+
     #Compute minimum distance between two meshes   
     if args.mindist :
        if args.fix_meshes:
             mesh1 = mesh.TriMesh(v_1, f_1)
             mesh2 = mesh.TriMesh(v_2, f_2)
        else:
-            mesh1 = mesh.TriMesh(args.mesh1, area_normalize=False, center=False)
-            mesh2 = mesh.TriMesh(args.mesh2, area_normalize=False, center=False) 
+            mesh1 = mesh.TriMesh(mesh1_file, area_normalize=False, center=False)
+            mesh2 = mesh.TriMesh(mesh2_file, area_normalize=False, center=False) 
        
        min_distance = find_minimum_distance_meshes(mesh1,mesh2)
        logging.info("Minimum distance is:{}".format(min_distance))
-       print('Minimum distance is:',min_distance)
     
     if not args.no_shape:
 
@@ -208,8 +223,8 @@ def main():
                 mesh1 = mesh.TriMesh(v_1,f_1, area_normalize=True, center=False)
                 mesh2 = mesh.TriMesh(v_2,f_2, area_normalize=True, center=False)
             else:    
-                mesh1 = mesh.TriMesh(args.mesh1, area_normalize=True, center=False)
-                mesh2 = mesh.TriMesh(args.mesh2, area_normalize=True, center=False)
+                mesh1 = mesh.TriMesh(mesh1_file, area_normalize=True, center=False)
+                mesh2 = mesh.TriMesh(mesh2_file, area_normalize=True, center=False)
 
             
             #Ouput files with descriptors
@@ -269,14 +284,37 @@ def main():
         #Computing Zernike descriptors  
         elif args.descr =='3DZD':
             #Check paths to 3DZD binaries required to calculate descriptors
-            if not "map2zernike" and not os.path.isfile(args.zernike_binary):
+        
+            zernike_binary_path_valid = (
+                args.zernike_binary
+                and os.path.isfile(args.zernike_binary)
+                and os.access(args.zernike_binary, os.X_OK)
+            )
+
+            # Check if default binary "map2zernike" is on the PATH
+            zernike_binary_in_path = shutil.which("map2zernike") is not None
+
+            # If neither exists → crash
+            if not (zernike_binary_path_valid or zernike_binary_in_path):
+                raise Exception(
+                    f"map2zernike binary not found. Provide a valid --zernike-binary path or ensure 'map2zernike' is on your PATH."
+                )
             
-                raise Exception(f"map2zernike binary not found or path not provided: {args.zernike_binary}")
+            obj2grid_binary_path_valid = (
+                args.obj2grid_binary
+                and os.path.isfile(args.obj2grid_binary)
+                and os.access(args.obj2grid_binary, os.X_OK)
+            )
 
-            if not "obj2grid" and not os.path.isfile(args.obj2grid_binary):
+            # Check if default binary "obj2grid" is on the PATH
+            obj2grid_binary_in_path = shutil.which("obj2grid") is not None
 
-                raise Exception(f"obj2grid binary not found or path to binary not provided: {args.obj2grid_binary}")
-
+            # If neither exists → crash
+            if not (obj2grid_binary_path_valid or obj2grid_binary_in_path):
+                raise Exception(
+                    f"obj2grid binary not found. Provide a valid --obj2grid-binary path or ensure 'obj2grid' is on your PATH."
+                )
+           
             try:
                 if args.fix_meshes:
                     mesh_1 = trimesh.Trimesh(vertices=v_1, faces=f_1)
@@ -290,22 +328,22 @@ def main():
                     #Remove headers in OBJ mesh files to run 3DZD binaries 
                     remove_until_vertex(output1_obj)
                     remove_until_vertex(output2_obj)
-                    get_inv(output1_obj,args.entryids[0],args.zernike_binary, args.obj2grid_binary,args.output)
-                    get_inv(output2_obj,args.entryids[1],args.zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(output1_obj,args.entry_ids[0],args.zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(output2_obj,args.entry_ids[1],args.zernike_binary, args.obj2grid_binary,args.output)
                 
                 else:
-                    _, ext1 = os.path.splitext(args.mesh1)
-                    _, ext2 = os.path.splitext(args.mesh2)
+                    _, ext1 = os.path.splitext(mesh1_file)
+                    _, ext2 = os.path.splitext(mesh2_file)
 
                     if ext1.lower() != '.obj' or ext2.lower() != '.obj':
                         raise Exception("Zernike descriptors take '.obj' files as input.")
                     
                     #Remove headers in OBJ mesh files to run 3DZD binaries 
-                    remove_until_vertex(args.mesh1)
-                    remove_until_vertex(args.mesh2)
+                    remove_until_vertex(mesh1_file)
+                    remove_until_vertex(mesh2_file)
             
-                    get_inv(args.mesh1,args.entryids[0],args.zernike_binary, args.obj2grid_binary,args.output)
-                    get_inv(args.mesh2,args.entryids[1],args.zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(mesh1_file,args.entry_ids[0],args.zernike_binary, args.obj2grid_binary,args.output)
+                    get_inv(mesh2_file,args.entry_ids[1],args.zernike_binary, args.obj2grid_binary,args.output)
                 
                 #predict_similarity_zernike(args.output,args.output)
 
