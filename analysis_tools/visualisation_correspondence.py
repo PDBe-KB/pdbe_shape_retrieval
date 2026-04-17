@@ -110,9 +110,23 @@ def visualize_correspondence_meshplot(source_path, target_path, map_path, R):
     verts_tgt_rotated_shifted[:, 0] += x_shift
     
     # Assign vertex colors
-    colors_src = normalize_colors(verts_src)
-    colors_tgt = colors_src[correspondence]
-    
+    #colors_src = normalize_colors(verts_src)
+    #colors_tgt = colors_src[correspondence]
+    # Assign vertex colors
+    GREY = np.array([0.8, 0.8, 0.8])
+    CORR_COLOR = np.array([1.0, 0.2, 0.2])
+
+    # Initialize all vertices as grey
+    colors_src = np.tile(GREY, (len(verts_src), 1))
+    colors_tgt = np.tile(GREY, (len(verts_tgt), 1))
+
+    # correspondence: target_index -> source_index
+    tgt_idx = np.arange(len(correspondence))
+    src_idx = correspondence
+
+    # Color only corresponding pairs
+    colors_src[src_idx] = CORR_COLOR
+    colors_tgt[tgt_idx] = CORR_COLOR
     
     # Plot source and rotated+shifted target
     double_plot_side_by_side(

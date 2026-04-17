@@ -61,7 +61,7 @@ class NeuralNetworkModel(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, inputs_1, inputs_2, extra_features, output_dist = False):
-        #print(inputs_1.shape)
+        
         outs_1 = []
         out = inputs_1
         outs_1.append(out)

@@ -3,6 +3,7 @@ from numpy.linalg import inv
 from torch import FloatTensor, LongTensor
 from shape_utils.models import SimpleEuclideanModel, NeuralNetworkModel
 import os
+import logging
 import math
 import torch
 import torch.nn as nn
@@ -140,16 +141,18 @@ def predict_similarity_zernike(input_dir,output_dir,model_type='simple_euclidean
     #model_type = 'neural_network'                                                                                     
     atom_type = atom_type
     if model_type == 'neural_network':
-        print("neural network of Kihara not yet implemented")
+        logging.info("neural network of Kihara not yet implemented") 
+        
     elif model_type == 'simple_euclidean_model':
-        print('Simple Euclidean Model')
+        logging.info("Simple Euclidean Model") 
         model = SimpleEuclideanModel()
     model.eval()
     db_structures = [x for x in os.listdir(input_dir) if '.inv' in x and '_cacn' not in x]
     db_structures = [x.split('.')[0] for x in db_structures]
-    print('pdb to compare : ',len(db_structures))
+    logging.info('pdb to compare : {} '.format(len(db_structures))) 
+    
     if len(db_structures) == 0:
-        print('There are no structures to compare.')
+        logging.info("There are no structures to compare.")
         exit()
 
     database_dataset = read_dataset(input_dir,db_structures,atom_type)

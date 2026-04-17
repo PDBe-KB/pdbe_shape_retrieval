@@ -32,8 +32,7 @@ def compute_scores_sym_matrix(scores_file, entries_file):
     dim = len(entry_labels)
     #Read list of elements and compute pairs 
     pairs_entries = get_pairs_fast(entry_labels)
-    #print(entry_labels)
-    #print(len(pairs_entries))
+    
     axes_labels = []
     for label in entry_labels:
         axes_labels.append(label)
@@ -254,7 +253,6 @@ def compute_clusters(sym_matrix,axes_labels,cluster,linkage_method="ward", thres
     
     k = clustering_av.n_clusters_
 
-    #print('no. of clusters',clusters)
     link_matrix = linkage_matrix(clustering_av)
     clustering_inds = fcluster(link_matrix, k, criterion="maxclust")
     clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
@@ -266,7 +264,6 @@ def compute_clusters(sym_matrix,axes_labels,cluster,linkage_method="ward", thres
         cluster_entries = []
         cluster = clusters[i]
         for j in cluster:
-            #print(axes_labels[j])
             cluster_entries.append(axes_labels[j])  
         clusters_all.append(cluster_entries)
     

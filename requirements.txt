@@ -18,3 +18,4 @@ pymeshfix
 tqdm
 scikit-learn
 pyglet
+torch

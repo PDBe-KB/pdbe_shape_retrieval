@@ -54,7 +54,7 @@ def get_inv(obj_file,fileid,map3dz_binary, obj2grid_binary,output_dir):
                 shutil.copy(obj_file, obj_output)
         else:
                 logging.info("Skipping copy: source and destination are identical.")
-                print("Skipping copy: source and destination are identical.")
+        
 
         # --- 2. RUN obj2grid --------------------------------------------------
         subprocess.run(
