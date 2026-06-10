@@ -7,6 +7,7 @@ from numpy import linalg
 from typing import Tuple
 import trimesh
 import torch
+from pyFM import mesh
 
 def read_vertices(file_mesh1,file_mesh2):
     mesh1 = trimesh.load_mesh(file_mesh1)
@@ -104,6 +105,63 @@ def calculate_rotation_translation_fixed(mesh1, mesh2, map_p2p):
     R, t = optimal_rotation_translation(A, B)
 
     return R, t
+
+
+
+def compute_aligned_meshes(file_mesh1, file_mesh2, R, area_normalize=True, center=False, use_transpose=True):
+    """
+    Load meshes using mesh.TriMesh, align mesh2 to mesh1 using rotation R,
+    and return aligned TriMesh objects.
+    """
+
+    # -----------------------
+    # Load TriMesh objects
+    # -----------------------
+    mesh1 = mesh.TriMesh(file_mesh1, area_normalize=area_normalize, center=center)
+    mesh2 = mesh.TriMesh(file_mesh2, area_normalize=area_normalize, center=center)
+
+    V1 = mesh1.vertlist.copy()
+    V2 = mesh2.vertlist.copy()
+    F1 = mesh1.facelist
+    F2 = mesh2.facelist
+
+    # -----------------------
+    # Center explicitly (safe even if class already centers)
+    # -----------------------
+    c1 = V1.mean(axis=0)
+    c2 = V2.mean(axis=0)
+
+    V1c = V1 - c1
+    V2c = V2 - c2
+
+    # -----------------------
+    # Apply rotation to mesh2
+    # -----------------------
+    if use_transpose:
+        V2c = V2c @ R.T
+    else:
+        V2c = V2c @ R
+
+    # -----------------------
+    # Put mesh2 into mesh1 frame
+    # -----------------------
+    V1c = V1c + c1
+    V2c = V2c + c1
+
+    # -----------------------
+    # Reconstruct TriMesh objects (IMPORTANT)
+    # -----------------------
+    mesh1_aligned = mesh.TriMesh.__new__(mesh.TriMesh)
+    mesh2_aligned = mesh.TriMesh.__new__(mesh.TriMesh)
+
+    mesh1_aligned.vertlist = V1c
+    mesh1_aligned.facelist = F1
+
+    mesh2_aligned.vertlist = V2c
+    mesh2_aligned.facelist = F2
+
+    return mesh1_aligned, mesh2_aligned
+
 def main():
     parser = argparse.ArgumentParser()
 

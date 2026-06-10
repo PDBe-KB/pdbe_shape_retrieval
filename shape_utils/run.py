@@ -8,8 +8,9 @@ import trimesh
 import os
 import shutil
 
+
 from shape_utils.spectral_descr import  calculate_spectral_descriptors
-from shape_utils.functional_maps import calculate_functional_maps, set_FM_model_parameters
+from shape_utils.functional_maps import calculate_functional_maps, set_FM_model_parameters, calculate_p2p_map 
 from shape_utils.meshes import fix_mesh, remove_until_vertex
 from shape_utils.utils import save_data_to_csv, save_list_to_csv, find_minimum_distance_meshes
 from shape_utils.zernike_descr import get_inv
@@ -274,7 +275,8 @@ def main():
                 
             if not os.path.exists(output_FM) or not os.path.exists(output_p2p21):
 
-                p2p21, FM = calculate_functional_maps(model,args.ncpus,refine = args.refine)
+                model_FM, FM = calculate_functional_maps(model,args.ncpus,refine = args.refine)
+                p2p21 = calculate_p2p_map(model_FM,args.ncpus)
         
                 score_geodesic_norm_eigenvalues = calculate_geodesic_norm_score(FM)
                 print("Shape Disimilarity score is::{}".format(score_geodesic_norm_eigenvalues))

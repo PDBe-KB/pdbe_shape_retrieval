@@ -54,6 +54,127 @@ def compute_scores_sym_matrix(scores_file, entries_file):
    
     return sym_matrix, axes_labels
 
+import numpy as np
+import itertools
+
+def compute_partial_scores_matrix_combined(
+    scores_file,
+    entries_file,
+    volumes_file=None,
+    fill_value=0.0,
+    w_vol=0.15,
+    normalize_spec="max",   # "max", "p95", or None
+):
+    # Read entry labels
+    with open(entries_file) as f:
+        entry_labels = [line.split()[0] for line in f]
+
+    dim = len(entry_labels)
+    label_to_idx = {label: idx for idx, label in enumerate(entry_labels)}
+
+    # Initialize matrix
+    sym_matrix = np.full((dim, dim), fill_value, dtype=float)
+
+    # Read spectral distances
+    scores_dict = {}
+    raw_scores = []
+
+    with open(scores_file) as f:
+        for line in f:
+            parts = line.strip().split()
+
+            if len(parts) != 3:
+                continue
+
+            p1, p2, score = parts
+
+            # Skip pairs outside subset
+            if p1 not in label_to_idx or p2 not in label_to_idx:
+                continue
+
+            score = float(score)
+
+            scores_dict[(p1, p2)] = score
+            scores_dict[(p2, p1)] = score
+
+            raw_scores.append(score)
+
+    raw_scores = np.array(raw_scores, dtype=float)
+
+    # Normalize spectral distances
+    if normalize_spec == "max":
+        spec_scale = raw_scores.max()
+
+    elif normalize_spec == "p95":
+        spec_scale = np.percentile(raw_scores, 95)
+
+    elif normalize_spec is None:
+        spec_scale = 1.0
+
+    else:
+        raise ValueError(
+            "normalize_spec must be 'max', 'p95', or None"
+        )
+
+    if spec_scale == 0:
+        spec_scale = 1.0
+
+    # Read volumes
+    vol_dict = {}
+
+    if volumes_file is not None:
+        with open(volumes_file) as f:
+            for line in f:
+                parts = line.strip().split()
+
+                if len(parts) < 2:
+                    continue
+
+                label = parts[0]
+                volume = float(parts[1])
+
+                vol_dict[label] = volume
+
+    # Fill matrix
+    for p1, p2 in itertools.combinations_with_replacement(entry_labels, 2):
+
+        if (p1, p2) not in scores_dict:
+            continue
+
+        i, j = label_to_idx[p1], label_to_idx[p2]
+
+        # Normalized spectral distance
+        spec_dist = scores_dict[(p1, p2)] / spec_scale
+
+        # Optional volume distance
+        if volumes_file is not None:
+
+            if p1 not in vol_dict or p2 not in vol_dict:
+                raise KeyError(f"Missing volume for {p1} or {p2}")
+
+            v1 = vol_dict[p1]
+            v2 = vol_dict[p2]
+
+            denom = max(v1, v2)
+
+            if denom == 0:
+                vol_dist = 0.0
+            else:
+                vol_dist = abs(v1 - v2) / denom
+
+            # Combined dissimilarity
+            combined_dist = (
+                spec_dist*(1+w_vol * vol_dist)
+            )
+
+        else:
+            combined_dist = spec_dist
+
+        sym_matrix[i, j] = combined_dist
+        sym_matrix[j, i] = combined_dist
+
+    return sym_matrix, entry_labels
+
 def compute_scores_sym_matrix_fast(scores_file, entries_file):
     
     entries_file = open(entries_file).read().splitlines()
@@ -242,7 +363,7 @@ def compute_clusters(sym_matrix,axes_labels,cluster,linkage_method="ward", thres
             linkage='ward',
             compute_distances = True,
             compute_full_tree = True, 
-            distance_threshold = None,
+            distance_threshold = threshold,
             n_clusters= no_clusters,
         )
     
