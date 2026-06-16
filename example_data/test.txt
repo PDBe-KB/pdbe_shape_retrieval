@@ -1,0 +1,244 @@
+         9018 function calls (8977 primitive calls) in 2.268 seconds
+
+   Ordered by: internal time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        4    2.151    0.538    2.151    0.538 {built-in method posix.waitpid}
+        2    0.033    0.016    0.034    0.017 {method 'readlines' of '_io._IOBase' objects}
+        2    0.028    0.014    0.028    0.014 {method 'writelines' of '_io._IOBase' objects}
+        4    0.023    0.006    0.023    0.006 {built-in method _posixsubprocess.fork_exec}
+        4    0.007    0.002    0.007    0.002 {built-in method posix.read}
+        2    0.005    0.002    0.071    0.036 /Users/gdiazleines/programs/pdbe_shape-retrieval/.venv/lib/python3.10/site-packages/shape_utils/meshes.py:194(remove_until_vertex)
+        2    0.004    0.002    0.004    0.002 {built-in method posix._fcopyfile}
+        1    0.004    0.004    2.268    2.268 /Users/gdiazleines/programs/pdbe_shape-retrieval/.venv/lib/python3.10/site-packages/shape_utils/run.py:29(main)
+        8    0.003    0.000    0.003    0.000 {method '__exit__' of '_io._IOBase' objects}
+        8    0.001    0.000    0.001    0.000 {built-in method io.open}
+     1939    0.001    0.000    0.001    0.000 {built-in method _codecs.utf_8_decode}
+        4    0.001    0.000    0.001    0.000 {built-in method posix.remove}
+        2    0.001    0.000    0.001    0.000 {built-in method posix.rename}
+        4    0.001    0.000    0.031    0.008 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1703(_execute_child)
+        4    0.000    0.000    2.184    0.546 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:461(run)
+     1939    0.000    0.000    0.001    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/codecs.py:319(decode)
+        8    0.000    0.000    0.000    0.000 {built-in method posix.getcwd}
+        4    0.000    0.000    0.032    0.008 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:758(__init__)
+       97    0.000    0.000    0.000    0.000 {built-in method posix.stat}
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1227(_close_pipe_fds)
+        4    0.000    0.000    2.152    0.538 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1110(communicate)
+        2    0.000    0.000    2.192    1.096 /Users/gdiazleines/programs/pdbe_shape-retrieval/.venv/lib/python3.10/site-packages/shape_utils/zernike_descr.py:27(get_inv)
+        8    0.000    0.000    2.152    0.269 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1927(_wait)
+       93    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py:71(join)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:246(_cleanup)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:1439(which)
+      413    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/contextlib.py:533(__exit__)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1867(_handle_exitstatus)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1399(add_argument)
+        6    0.000    0.000    0.000    0.000 {built-in method posix.access}
+      8/6    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:494(_parse)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/contextlib.py:452(__init__)
+        4    0.000    0.000    2.151    0.538 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1914(_try_wait)
+       10    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py:150(dirname)
+       16    0.000    0.000    0.000    0.000 {method 'split' of 'str' objects}
+        2    0.000    0.000    0.005    0.002 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:224(copyfile)
+     15/5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:87(_compile)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:161(__init__)
+      437    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py:52(normcase)
+        2    0.000    0.000    0.000    0.000 {built-in method posix.chmod}
+       52    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/re.py:288(_compile)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1037(__exit__)
+        8    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py:338(normpath)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:1385(get_terminal_size)
+        8    0.000    0.000    0.000    0.000 {built-in method posix.close}
+        4    0.000    0.000    0.000    0.000 {built-in method builtins.sorted}
+      112    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py:41(_get_sep)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1540(_get_optional_kwargs)
+        4    0.000    0.000    0.000    0.000 {built-in method posix.pipe}
+       56    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/os.py:675(__getitem__)
+        2    0.000    0.000    0.004    0.002 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:84(_fastcopy_fcopyfile)
+      144    0.000    0.000    0.000    0.000 {method 'startswith' of 'str' objects}
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1460(_add_action)
+       79    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/genericpath.py:16(exists)
+        2    0.000    0.000    0.005    0.002 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:403(copy)
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1878(_parse_known_args)
+        3    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1317(__init__)
+      573    0.000    0.000    0.000    0.000 {built-in method posix.fspath}
+      7/5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:436(_parse_sub)
+        3    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/gettext.py:542(find)
+        8    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py:377(abspath)
+        2    0.000    0.000    0.000    0.000 {method 'fileno' of '_io.BufferedWriter' objects}
+       21    0.000    0.000    0.000    0.000 {built-in method posix.get_terminal_size}
+      368    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}
+       81    0.000    0.000    0.000    0.000 {method 'get' of 'dict' objects}
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:598(_format_args)
+     17/7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:175(getwidth)
+        6    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/gettext.py:211(_expand_lang)
+       56    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/os.py:755(encode)
+        5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:560(_compile_info)
+        6    0.000    0.000    0.000    0.000 {method 'format' of 'str' objects}
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1178(poll)
+        5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:783(compile)
+        1    0.000    0.000    0.001    0.001 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1701(__init__)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:827(__init__)
+       80    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:165(__getitem__)
+       67    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:1434(_access_check)
+  221/206    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+        8    0.000    0.000    2.152    0.269 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1204(wait)
+        5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:944(parse)
+       35    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:234(__next)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/genericpath.py:39(isdir)
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1839(parse_known_args)
+        4    0.000    0.000    0.000    0.000 {built-in method _abc._abc_instancecheck}
+      117    0.000    0.000    0.000    0.000 {method 'endswith' of 'str' objects}
+       50    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1374(_registry_get)
+        4    0.000    0.000    0.000    0.000 {built-in method sys.exc_info}
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1649(_add_action)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:436(__init__)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:288(copymode)
+       45    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/re.py:249(compile)
+       27    0.000    0.000    0.000    0.000 {built-in method builtins.setattr}
+       31    0.000    0.000    0.000    0.000 {method 'match' of 're.Pattern' objects}
+        7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2431(_get_values)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:200(_samefile)
+       37    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1370(register)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2553(_get_formatter)
+        7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1925(take_action)
+       60    0.000    0.000    0.000    0.000 {method 'encode' of 'str' objects}
+        7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1946(consume_optional)
+      7/5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:485(_get_literal_prefix)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1574(_pop_action_class)
+        7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2157(_match_argument)
+       15    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:913(__init__)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/types.py:176(__get__)
+       65    0.000    0.000    0.000    0.000 {built-in method builtins.min}
+        3    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/gettext.py:583(translation)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1065(__del__)
+        6    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/locale.py:396(normalize)
+       46    0.000    0.000    0.000    0.000 {built-in method builtins.hasattr}
+       85    0.000    0.000    0.000    0.000 {method 'add' of 'set' objects}
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/codecs.py:186(__init__)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:292(_optimize_charset)
+        7    0.000    0.000    0.000    0.000 {built-in method builtins.getattr}
+        4    0.000    0.000    0.000    0.000 {built-in method _thread.allocate_lock}
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1812(_add_action)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1587(_check_conflict)
+        5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/enum.py:986(__and__)
+        1    0.000    0.000    0.000    0.000 {built-in method posix.cpu_count}
+        8    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:356(_escape)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:582(_metavar_formatter)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:203(__init__)
+       27    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:255(get)
+        5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:622(_code)
+       22    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:173(append)
+       15    0.000    0.000    0.000    0.000 {method 'join' of 'str' objects}
+       11    0.000    0.000    0.000    0.000 {method 'rfind' of 'str' objects}
+       16    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:287(tell)
+       14    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/_collections_abc.py:821(get)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/contextlib.py:530(__enter__)
+        8    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2487(_get_value)
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:591(format)
+       33    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:161(__len__)
+        4    0.000    0.000    0.000    0.000 /Users/gdiazleines/programs/pdbe_shape-retrieval/.venv/lib/python3.10/site-packages/shape_utils/meshes.py:219(<genexpr>)
+        4    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.lock' objects}
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1627(__init__)
+        5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:225(__init__)
+       41    0.000    0.000    0.000    0.000 {method 'replace' of 'str' objects}
+        8    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py:60(isabs)
+        6    0.000    0.000    0.000    0.000 {built-in method builtins.ord}
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:265(_compile_charset)
+       15    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:112(__init__)
+       21    0.000    0.000    0.000    0.000 {method 'fileno' of '_io.TextIOWrapper' objects}
+        7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2298(_get_nargs_pattern)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/os.py:805(fsencode)
+        5    0.000    0.000    0.000    0.000 {method 'decode' of 'bytes' objects}
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1604(_get_handles)
+       10    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/enum.py:359(__call__)
+        6    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/shutil.py:218(_stat)
+       20    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:250(match)
+        1    0.000    0.000    0.000    0.000 {built-in method _abc._abc_subclasscheck}
+       15    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2195(_parse_optional)
+       24    0.000    0.000    0.000    0.000 {built-in method builtins.max}
+        8    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1879(_internal_poll)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/abc.py:117(__instancecheck__)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/codecs.py:309(__init__)
+        7    0.000    0.000    0.000    0.000 {built-in method builtins.next}
+        7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2056(<listcomp>)
+        4    0.000    0.000    0.000    0.000 {method 'rfind' of 'bytes' objects}
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/genericpath.py:27(isfile)
+       10    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/enum.py:678(__new__)
+       50    0.000    0.000    0.000    0.000 {built-in method builtins.callable}
+       42    0.000    0.000    0.000    0.000 {method 'pop' of 'dict' objects}
+        5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:76(__init__)
+       23    0.000    0.000    0.000    0.000 {method 'lstrip' of 'str' objects}
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:971(__init__)
+        6    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:447(_simple)
+        5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:928(fix_flags)
+        3    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/gettext.py:664(dgettext)
+        5    0.000    0.000    0.000    0.000 {built-in method _sre.compile}
+       21    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/enum.py:801(value)
+       10    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:619(isstring)
+        7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/re.py:187(match)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1450(add_argument_group)
+        3    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:456(_generate_overlap_table)
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py:140(basename)
+       18    0.000    0.000    0.000    0.000 {method 'find' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/_collections_abc.py:78(_check_methods)
+       14    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:82(groups)
+        4    0.000    0.000    0.000    0.000 {built-in method posix.WIFSTOPPED}
+       43    0.000    0.000    0.000    0.000 {method 'setdefault' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/context.py:41(cpu_count)
+        4    0.000    0.000    0.000    0.000 {method 'rstrip' of 'str' objects}
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:948(__init__)
+        5    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/os.py:759(decode)
+        4    0.000    0.000    0.000    0.000 {method 'rstrip' of 'bytes' objects}
+        3    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1578(_get_handler)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:85(opengroup)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/posixpath.py:117(splitext)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:516(_get_charset_prefix)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/subprocess.py:1034(__enter__)
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:871(__init__)
+        7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:942(__call__)
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2027(consume_positionals)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/genericpath.py:121(_splitext)
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:433(_uniq)
+        3    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/gettext.py:741(gettext)
+        4    0.000    0.000    0.000    0.000 {method 'find' of 'bytearray' objects}
+        4    0.000    0.000    0.000    0.000 {method 'count' of 'list' objects}
+        8    0.000    0.000    0.000    0.000 {built-in method sys.audit}
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1093(__init__)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/genericpath.py:94(samefile)
+        9    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:477(_get_iscased)
+        7    0.000    0.000    0.000    0.000 {method 'remove' of 'list' objects}
+        6    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:620(<listcomp>)
+        8    0.000    0.000    0.000    0.000 {method 'lower' of 'str' objects}
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/os.py:1080(__subclasshook__)
+        8    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2513(_check_value)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_compile.py:81(_combine_flags)
+        7    0.000    0.000    0.000    0.000 {method 'group' of 're.Match' objects}
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/codecs.py:260(__init__)
+        6    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:169(__setitem__)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/os.py:817(fsdecode)
+        7    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1741(identity)
+        2    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:97(closegroup)
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1825(<listcomp>)
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/abc.py:121(__subclasscheck__)
+        4    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/sre_parse.py:163(__delitem__)
+        9    0.000    0.000    0.000    0.000 {method 'extend' of 'list' objects}
+        2    0.000    0.000    0.000    0.000 {built-in method _stat.S_IMODE}
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1824(_get_positional_actions)
+        3    0.000    0.000    0.000    0.000 {built-in method _stat.S_ISDIR}
+        4    0.000    0.000    0.000    0.000 {built-in method _stat.S_ISREG}
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2179(_match_arguments_partial)
+        1    0.000    0.000    0.000    0.000 {built-in method fromkeys}
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/genericpath.py:87(samestat)
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1832(parse_args)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:2480(<listcomp>)
+        6    0.000    0.000    0.000    0.000 {built-in method builtins.iter}
+        6    0.000    0.000    0.000    0.000 {method 'reverse' of 'list' objects}
+        4    0.000    0.000    0.000    0.000 {built-in method posix.waitstatus_to_exitcode}
+        3    0.000    0.000    0.000    0.000 {built-in method _stat.S_ISFIFO}
+        5    0.000    0.000    0.000    0.000 {method 'items' of 'dict' objects}
+        2    0.000    0.000    0.000    0.000 {method 'fileno' of '_io.BufferedReader' objects}
+        1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1302(__init__)
+
+

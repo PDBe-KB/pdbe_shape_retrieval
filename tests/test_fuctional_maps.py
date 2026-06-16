@@ -1,174 +1,92 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
+
 import numpy as np
+import numpy.testing as npt
 
+from shape_utils.config import FunctionalMapConfig
 from shape_utils.functional_maps import (
     calculate_functional_maps,
-    compute_shape_difference,
     calculate_functional_maps_chem,
+    calculate_p2p_map,
+    compute_shape_difference,
 )
 
 
 class TestFunctionalMaps(unittest.TestCase):
-
     def setUp(self):
-        """
-        Create a mock model object that behaves like a pyFM model.
-        """
         self.mock_model = MagicMock()
-
-        # Fake outputs
-        self.mock_model.get_p2p.return_value = np.array([0, 1, 2])
-        self.mock_model.FM = np.array([[1, 0], [0, 1]])
-
-        # Shape difference outputs
-        self.mock_model.D_a = "area_operator"
-        self.mock_model.D_c = "conformal_operator"
-
-    # ------------------------------------------------------------
-    # Test calculate_functional_maps()
-    # ------------------------------------------------------------
-
-    def test_calculate_functional_maps_no_refine(self):
-        p2p, FM = calculate_functional_maps(self.mock_model, n_cpus=2, refine=None)
-
-        # Model.fit() must be called
-        self.mock_model.fit.assert_called_once()
-
-        # get_p2p should be called for non-refine mode
-        self.mock_model.get_p2p.assert_called_once_with(n_jobs=2)
-
-        # Outputs
-        self.assertTrue((p2p == np.array([0, 1, 2])).all())
-        self.assertTrue((FM == np.array([[1, 0], [0, 1]])).all())
-
-    def test_calculate_functional_maps_icp(self):
-        p2p, FM = calculate_functional_maps(self.mock_model, refine="icp")
-
-        self.mock_model.change_FM_type.assert_called_with("classic")
-        self.mock_model.icp_refine.assert_called_once()
-        self.mock_model.get_p2p.assert_called()
-
-    def test_calculate_functional_maps_zoomout(self):
-        p2p, FM = calculate_functional_maps(self.mock_model, refine="zoomout")
-
-        self.mock_model.change_FM_type.assert_called_with("classic")
-        self.mock_model.zoomout_refine.assert_called_once()
-
-        # The returned values should be those from mock_model
-        self.assertTrue((FM == self.mock_model.FM).all())
-
-    # ------------------------------------------------------------
-    # Test compute_shape_difference()
-    # ------------------------------------------------------------
-
-    def test_compute_shape_difference(self):
-        D_area, D_conf = compute_shape_difference(self.mock_model)
-
-        # compute_SD should be called
-        self.mock_model.compute_SD.assert_called_once()
-
-        self.assertEqual(D_area, "area_operator")
-        self.assertEqual(D_conf, "conformal_operator")
-
-    # ------------------------------------------------------------
-    # Test calculate_functional_maps_chem()
-    # ------------------------------------------------------------
-
-    def test_calculate_functional_maps_chem(self):
-        descr1 = np.random.rand(10, 5)
-        descr2 = np.random.rand(10, 5)
-
-        FM = calculate_functional_maps_chem(self.mock_model, descr1, descr2)
-
-        self.mock_model.fit_othdescr.assert_called_once()
-        self.assertTrue((FM == self.mock_model.FM).all())
-
-
-from shape_utils.functional_maps import (
-    calculate_functional_maps,
-    compute_shape_difference,
-    calculate_functional_maps_chem,
-)
-
-
-class TestFunctionalMaps(unittest.TestCase):
-
-    def setUp(self):
-        """
-        Create a mock pyFM model object with numeric matrices.
-        """
-        self.mock_model = MagicMock()
-
-        # FM is a numeric matrix
         self.mock_model.FM = np.array([[1.0, 0.0], [0.0, 1.0]])
-
-        # p2p result is an integer array
         self.mock_model.get_p2p.return_value = np.array([2, 0, 1])
-
-        # Shape difference operators are matrices
         self.mock_model.D_a = np.array([[1.0, 2.0], [3.0, 4.0]])
         self.mock_model.D_c = np.array([[0.5, 0.6], [0.7, 0.8]])
 
-    # ------------------------------------------------------------
-    # calculate_functional_maps()
-    # ------------------------------------------------------------
+    def test_calculate_functional_maps_uses_config_fit_params(self):
+        config = FunctionalMapConfig(
+            w_descr=2.0,
+            w_lap=0.2,
+            w_dcomm=0.3,
+            w_orient=0.4,
+            n_cpus=4,
+            verbose=False,
+        )
 
-    def test_calculate_functional_maps_no_refine(self):
-        p2p, FM = calculate_functional_maps(self.mock_model, n_cpus=4, refine=None)
+        model, fm = calculate_functional_maps(self.mock_model, config)
 
-        # fit should be called once
-        self.mock_model.fit.assert_called_once()
+        self.assertIs(model, self.mock_model)
+        npt.assert_array_equal(fm, self.mock_model.FM)
+        self.mock_model.fit.assert_called_once_with(
+            w_descr=2.0,
+            w_lap=0.2,
+            w_dcomm=0.3,
+            w_orient=0.4,
+            verbose=False,
+        )
+        self.mock_model.get_p2p.assert_not_called()
 
-        # p2p should be called
-        self.mock_model.get_p2p.assert_called_once_with(n_jobs=4)
+    def test_calculate_functional_maps_preserves_old_n_cpus_refine_call_style(self):
+        model, fm = calculate_functional_maps(self.mock_model, n_cpus=3, refine="icp")
 
-        npt.assert_array_equal(p2p, np.array([2, 0, 1]))
-        npt.assert_array_equal(FM, np.array([[1.0, 0.0], [0.0, 1.0]]))
+        self.assertIs(model, self.mock_model)
+        npt.assert_array_equal(fm, self.mock_model.FM)
+        self.mock_model.change_FM_type.assert_called_once_with("classic")
+        self.mock_model.icp_refine.assert_called_once_with(n_jobs=3, verbose=True)
 
-    def test_calculate_functional_maps_icp(self):
-        p2p, FM = calculate_functional_maps(self.mock_model, refine="icp")
+    def test_calculate_functional_maps_zoomout_uses_config(self):
+        config = FunctionalMapConfig(refine="zoomout", zoomout_nit=5, zoomout_step=2, verbose=False)
 
-        self.mock_model.change_FM_type.assert_called_with("classic")
-        self.mock_model.icp_refine.assert_called_once()
-        self.mock_model.get_p2p.assert_called()
+        calculate_functional_maps(self.mock_model, config)
 
-        npt.assert_array_equal(FM, self.mock_model.FM)
+        self.mock_model.change_FM_type.assert_called_once_with("classic")
+        self.mock_model.zoomout_refine.assert_called_once_with(nit=5, step=2, verbose=False)
 
-    def test_calculate_functional_maps_zoomout(self):
-        p2p, FM = calculate_functional_maps(self.mock_model, refine="zoomout")
+    def test_calculate_p2p_map(self):
+        result = calculate_p2p_map(self.mock_model, n_cpus=7)
 
-        self.mock_model.change_FM_type.assert_called_with("classic")
-        self.mock_model.zoomout_refine.assert_called_once()
-
-        npt.assert_array_equal(FM, self.mock_model.FM)
-
-    # ------------------------------------------------------------
-    # compute_shape_difference()
-    # ------------------------------------------------------------
+        npt.assert_array_equal(result, np.array([2, 0, 1]))
+        self.mock_model.get_p2p.assert_called_once_with(n_jobs=7)
 
     def test_compute_shape_difference(self):
-        D_area, D_conf = compute_shape_difference(self.mock_model)
+        d_area, d_conf = compute_shape_difference(self.mock_model)
 
-        # compute_SD must be called exactly once
         self.mock_model.compute_SD.assert_called_once()
+        npt.assert_array_equal(d_area, self.mock_model.D_a)
+        npt.assert_array_equal(d_conf, self.mock_model.D_c)
 
-        # Compare matrices
-        npt.assert_array_equal(D_area, np.array([[1.0, 2.0], [3.0, 4.0]]))
-        npt.assert_array_equal(D_conf, np.array([[0.5, 0.6], [0.7, 0.8]]))
+    def test_calculate_functional_maps_chem_uses_config_fit_params(self):
+        descr1 = np.random.rand(10, 5)
+        descr2 = np.random.rand(10, 5)
+        config = FunctionalMapConfig(w_descr=2.0, verbose=False)
 
-    # ------------------------------------------------------------
-    # calculate_functional_maps_chem()
-    # ------------------------------------------------------------
+        fm = calculate_functional_maps_chem(self.mock_model, descr1, descr2, config)
 
-    def test_calculate_functional_maps_chem(self):
-        descr1 = np.random.rand(100, 10)
-        descr2 = np.random.rand(100, 10)
-
-        FM = calculate_functional_maps_chem(self.mock_model, descr1, descr2)
-
-        # fit_othdescr should be called exactly once with descriptors
-        self.mock_model.fit_othdescr.assert_called_once()
-
-        # Returned FM should match the mock model FM
-        npt.assert_array_equal(FM, self.mock_model.FM)
+        npt.assert_array_equal(fm, self.mock_model.FM)
+        self.mock_model.fit_othdescr.assert_called_once_with(
+            descr1,
+            descr2,
+            w_descr=2.0,
+            w_lap=1e-2,
+            w_dcomm=1e-1,
+            w_orient=0.0,
+            verbose=False,
+        )

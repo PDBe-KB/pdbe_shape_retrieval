@@ -37,13 +37,13 @@ To make your life easier when running the process, it is better to set two path 
 An environment variable to the `obj2grid` binary:
 
 ```
-export PATH="$PATH:your_path_to_obj2grid/obj2grid"
+export OBJ2GRID_PATH="$PATH:your_path_to_obj2grid/obj2grid"
 ```
 
 A path to the `map2zernike binary` of 3D-Surfer :
 
 ```
-export PISA_SETUP_DIR="/your_path_to_3DSurfer/bin/"
+export MAP2ZERNIKE_SETUP_DIR="/your_path_to_3DSurfer/bin/"
 ```
 
 

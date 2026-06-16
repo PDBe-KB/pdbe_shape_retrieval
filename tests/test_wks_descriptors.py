@@ -1,6 +1,7 @@
 import unittest
-from unittest.mock import MagicMock
-from shape_utils.spectral_descr import calculate_descriptors, distance_WKS
+from unittest.mock import MagicMock, patch
+
+from shape_utils.spectral_descr import calculate_spectral_descriptors, distance_WKS
 
 class TestDescriptorFunctions(unittest.TestCase):
 
@@ -11,21 +12,33 @@ class TestDescriptorFunctions(unittest.TestCase):
         self.mock_model.descr2 = [[1.5, 2.5, 3.5]]
         self.landmarks = [0, 1, 2]
 
-    def test_calculate_descriptors_calls_preprocess(self):
-        descr1, descr2 = calculate_descriptors(
-            model=self.mock_model,
+    @patch("shape_utils.spectral_descr.functional.SpectralDescriptors")
+    def test_calculate_spectral_descriptors_calls_preprocess(self, mock_descriptors):
+        descr_model = MagicMock()
+        descr_model.descr = [[1.0, 2.0, 3.0]]
+        mock_descriptors.return_value = descr_model
+
+        result = calculate_spectral_descriptors(
+            mesh="mesh",
             kprocess=50,
             n_ev=30,
             ndescr=100,
             step=2,
             landmarks=self.landmarks,
-            output_dir='some/path',
-            descr_type='WKS'
+            descr_type="WKS",
         )
 
-        self.mock_model.preprocess.assert_called_once()
-        self.assertEqual(descr1, self.mock_model.descr1)
-        self.assertEqual(descr2, self.mock_model.descr2)
+        mock_descriptors.assert_called_once_with("mesh")
+        descr_model.preprocess_descriptors_mesh.assert_called_once_with(
+            n_ev=(30, 30),
+            subsample_step=2,
+            descr_type="WKS",
+            k_process=50,
+            n_descr=100,
+            landmarks=self.landmarks,
+            verbose=True,
+        )
+        self.assertEqual(result, descr_model.descr)
 
     def test_distance_WKS_correctness(self):
         wks1 = [[1.0, 2.0, 3.0], [2.0, 3.0, 4.0]]
@@ -40,4 +53,3 @@ class TestDescriptorFunctions(unittest.TestCase):
         wks2 = [[0.0, 1.0]]
         result = distance_WKS(wks1, wks2)
         self.assertEqual(result, [0.0])  # No error even with zero denom
-

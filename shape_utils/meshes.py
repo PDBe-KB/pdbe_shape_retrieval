@@ -1,12 +1,20 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
 import pymeshlab as ml
-import os
 import numpy as np
 import pymeshfix
 import trimesh
 from scipy.spatial import KDTree
-from scipy.spatial.distance import squareform
 
-def fix_mesh(mesh_file,resolution=0.5, collapse_vertices = False, reconstruct = False):
+def fix_mesh(
+    mesh_file: str,
+    resolution: float = 0.5,
+    collapse_vertices: bool = False,
+    reconstruct: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Repair and optionally simplify a 3D mesh using MeshLab (pymeshlab) and PyMeshFix.
 
@@ -63,7 +71,7 @@ def fix_mesh(mesh_file,resolution=0.5, collapse_vertices = False, reconstruct = 
 
     return v, f
 
-def reduce_resolution_mesh(ms, resolution):
+def reduce_resolution_mesh(ms: Any, resolution: float) -> tuple[np.ndarray, np.ndarray]:
     """
     Reduce the resolution of the current mesh in a MeshSet using quadratic edge collapse of vertices.
 
@@ -101,7 +109,7 @@ def reduce_resolution_mesh(ms, resolution):
     f = m.face_matrix()
     return v,f
 
-def reconstruct_mesh(ms):
+def reconstruct_mesh(ms: Any) -> tuple[Any, np.ndarray, np.ndarray]:
     """
     Reconstruct a surface mesh using MeshLab's VCG surface reconstruction filter. This function applies the `generate_surface_reconstruction_vcg` filter to the
     current mesh in the provided MeshSet, producing a reconstructed (often watertight)
@@ -128,10 +136,10 @@ def reconstruct_mesh(ms):
     return ms, m.vertex_matrix(),m.face_matrix()
 
 
-def compute_center_of_mass(mesh):
+def compute_center_of_mass(mesh: Any) -> np.ndarray:
     center = mesh.center_mass
     return center
-def compute_min_dist(mesh1_file, mesh2_file):
+def compute_min_dist(mesh1_file: str, mesh2_file: str) -> float:
     """
     Compute minimum distance between two meshes
     
@@ -153,9 +161,9 @@ def compute_min_dist(mesh1_file, mesh2_file):
     tree = KDTree(vertices2)
     distances, _ = tree.query(vertices1)
     # Return the minimum distance
-    return np.min(distances)
+    return float(np.min(distances))
 
-def compute_centers_dist(mesh1_file,mesh2_file):
+def compute_centers_dist(mesh1_file: str, mesh2_file: str) -> float:
     """
     Compute the Euclidean distance between the centers of mass of two meshes.
     This function loads two mesh files using `trimesh`, computes their centers
@@ -190,8 +198,10 @@ def compute_centers_dist(mesh1_file,mesh2_file):
 
     # Calculate Euclidean distance between centers
     distance = np.linalg.norm(center1 - center2)
-    return distance
-def remove_until_vertex(file_path):
+    return float(distance)
+
+
+def remove_until_vertex(file_path: str) -> None:
     """
     Remove all lines in a mesh file until the first vertex declaration.
 
@@ -212,7 +222,8 @@ def remove_until_vertex(file_path):
         ValueError:
             If the file contains no vertex lines starting with `'v'`.
     """
-    with open(file_path, 'r') as file:
+    path = Path(file_path)
+    with path.open('r') as file:
         lines = file.readlines()
 
     # Find the index of the first line that starts with 'v' (ignoring leading whitespace)
@@ -221,5 +232,5 @@ def remove_until_vertex(file_path):
     # Keep only lines starting from the first 'v' line
     lines = lines[start_index:]
 
-    with open(file_path, 'w') as file:
+    with path.open('w') as file:
         file.writelines(lines)

@@ -1,14 +1,16 @@
+from __future__ import annotations
+
 import logging
+from typing import Any
+
 import pandas as pd
-from pandas import DataFrame
 import numpy as np
 from scipy.spatial import KDTree
-from scipy.spatial.distance import squareform
 
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
-def save_data_to_csv(data, output_file):
+def save_data_to_csv(data: np.ndarray, output_file: str) -> None:
     """Dump matrix data into a output csv file.                                                                                                                   
         Args:
             data (dict): The data (for spectral descriptors or functional maps) to be dumped.                                                                        
@@ -29,16 +31,14 @@ def save_data_to_csv(data, output_file):
 
 
         except Exception as e:
-            logging.error(
-                "Invalid data frame for wks descriptors: probably wrong fields in the data "
-            )
-            logging.error(e)
+            logger.error("Invalid data frame for wks descriptors: probably wrong fields in the data")
+            logger.error(e)
     else:
-        logging.info(f"No data found to save")
+        logger.info("No data found to save")
 
-        return None 
+        return None
 
-def save_list_to_csv(data, output_file):
+def save_list_to_csv(data: Any, output_file: str) -> None:
     """Dump list into a csv output file.                                                                                                                   
         Args:
             data (dict): The data for list of parameters to be dumped.                                                                        
@@ -54,15 +54,15 @@ def save_list_to_csv(data, output_file):
             df.to_csv(output_file, index=False,header=None)
 
         except Exception as e:
-            logging.error(
-                "Invalid data frame list of paramenters: probably wrong fields in the data "
-             )
-            logging.error(e)
+            logger.error("Invalid data frame list of parameters: probably wrong fields in the data")
+            logger.error(e)
     else:
-        logging.info(f"No data found to save")
+        logger.info("No data found to save")
 
         return None
-def find_minimum_distance_meshes(mesh1, mesh2):
+
+
+def find_minimum_distance_meshes(mesh1: Any, mesh2: Any) -> float:
     """
     Compute the minimum Euclidean distance between two meshes.
 
@@ -85,4 +85,4 @@ def find_minimum_distance_meshes(mesh1, mesh2):
     distances, _ = tree.query(vertices1)
     
     # Return the minimum distance
-    return np.min(distances)
+    return float(np.min(distances))

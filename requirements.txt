@@ -15,7 +15,6 @@ scikit-learn
 potpourri3d
 robust_laplacian
 pymeshfix 
-tqdm
-scikit-learn
 pyglet
 torch
+pydantic

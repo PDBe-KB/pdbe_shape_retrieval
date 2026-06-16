@@ -1,15 +1,29 @@
-import numpy as np
+from __future__ import annotations
+
 import logging
+from typing import Any
+
+import numpy as np
 from pyFM import functional
 import dense_mesh as dm
 import pyFM.spectral as spectral
 from pyFM.spectral.nn_utils import knn_query
-from pyFM.refine.zoomout import zoomout_refine
+
+from shape_utils.config import DenseMeshConfig, FunctionalMapConfig
 
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
-def set_FM_model_parameters(mesh1,mesh2,kprocess,n_ev,ndescr,step,landmarks,descr_type='WKS'):
+def set_FM_model_parameters(
+    mesh1: Any,
+    mesh2: Any,
+    kprocess: int,
+    n_ev: int,
+    ndescr: int,
+    step: int,
+    landmarks: Any,
+    descr_type: str = 'WKS',
+) -> Any:
     """                                                                                                                                                                                
     Set model parameters for FM and Wave Kernel Signatures and Heat Kernel Signatures on triangulated meshes using pyFM (https://github.com/RobinMagnet/pyFM)                                                                                                                                        
                                                                                                                                                                                        
@@ -48,7 +62,13 @@ def set_FM_model_parameters(mesh1,mesh2,kprocess,n_ev,ndescr,step,landmarks,desc
 
     return model
 
-def calculate_functional_maps(model,n_cpus = 1, refine= None):
+def calculate_functional_maps(
+    model: Any,
+    config: FunctionalMapConfig | dict[str, Any] | int | None = None,
+    *,
+    n_cpus: int | None = None,
+    refine: str | None = None,
+) -> tuple[Any, np.ndarray]:
     """                                                                                                                                                                                
     Calculate functional maps and point to point maps with pyFM code (https://github.com/RobinMagnet/pyFM)                                                                                                                                        
                                                                                                                                                                                        
@@ -63,58 +83,47 @@ def calculate_functional_maps(model,n_cpus = 1, refine= None):
         FM : Functional map (correspondance matrix)
         p2p21 : Point to point map 
     """   
-    logging.info("cpus used: {}".format(n_cpus)) 
-    
-    fit_params = {
-        'w_descr': 1e0,
-        'w_lap': 1e-2,
-        'w_dcomm': 1e-1,
-        'w_orient': 0
-    }
+    fm_config = FunctionalMapConfig.from_value(config, n_cpus=n_cpus, refine=refine)
+    logger.info("cpus used: %s", fm_config.n_cpus)
 
-    logging.info(f"Computing correspondence matrix ")
-    model.fit(**fit_params, verbose=True)
+    logger.info("Computing correspondence matrix")
+    model.fit(**fm_config.fit_params(), verbose=fm_config.verbose)
 
-    if refine is None :
-        logging.info(f"Computing point to point map using correspondence matrix")
+    if fm_config.refine is None:
+        logger.info("Computing point to point map using correspondence matrix")
         FM = model.FM
-        #p2p_21 = model.get_p2p(n_jobs=n_cpus)
-        
-    #refine model using ICP or Zoom
-    if refine == 'icp':
+    elif fm_config.refine == 'icp':
         model.change_FM_type('classic')
-        model.icp_refine(n_jobs=n_cpus,verbose=True)
+        model.icp_refine(n_jobs=fm_config.n_cpus, verbose=fm_config.verbose)
         FM = model.FM
-        #p2p_21 = model.get_p2p(n_jobs=n_cpus)
-        
-    if refine == 'zoomout':
+    elif fm_config.refine == 'zoomout':
         model.change_FM_type('classic') # We refine the first computed map, not the icp-refined one
-        model.zoomout_refine(nit=11, step = 1,verbose=True)
+        model.zoomout_refine(
+            nit=fm_config.zoomout_nit,
+            step=fm_config.zoomout_step,
+            verbose=fm_config.verbose,
+        )
         FM = model.FM
-        #p2p_21 = model.get_p2p(n_jobs=n_cpus)
+    else:
+        raise ValueError("refine must be one of: icp, zoomout, or None")
         
     model_FM = model
 
     return model_FM, FM
 
-def calculate_p2p_map(model_FM,n_cpus = 8):
+def calculate_p2p_map(model_FM: Any, n_cpus: int = 8) -> np.ndarray:
     p2p_21 = model_FM.get_p2p(n_jobs=n_cpus)
     return p2p_21
 
-def calculate_scalable_functional_maps(mesh1,mesh2,neigvecs,n_samples,n_cpus = 8):
-    # Define parameters for the process
-    process_params = {
-        "dist_ratio": 3,  # rho = dist_ratio * average_radius
-        "self_weight_limit": 0.25,  # Minimum value for self weight
-        "correct_dist": False,
-        "interpolation": "poly",
-        "return_dist": True,
-        "adapt_radius": True,
-        "update_sample": True,
-        "n_jobs": n_cpus,
-        "force_n_samples": False,
-        "verbose": True,
-    }
+def calculate_scalable_functional_maps(
+    mesh1: Any,
+    mesh2: Any,
+    neigvecs: int,
+    n_samples: int,
+    n_cpus: int = 8,
+    dense_mesh_config: DenseMeshConfig | None = None,
+) -> np.ndarray:
+    process_params = (dense_mesh_config or DenseMeshConfig()).process_params(n_cpus)
 
 
     U1, Ab1, Wb1, sub1, distmat1 = dm.process_mesh(mesh1, n_samples, **process_params)
@@ -146,7 +155,7 @@ def calculate_scalable_functional_maps(mesh1,mesh2,neigvecs,n_samples,n_cpus = 8
     return FM_12_init
 
 
-def compute_shape_difference(model):
+def compute_shape_difference(model: Any) -> tuple[np.ndarray, np.ndarray]:
     """
     Computes shape difference operators, area-based and conformal 
     
@@ -163,7 +172,15 @@ def compute_shape_difference(model):
 
     return D_area, D_conformal 
 
-def calculate_functional_maps_chem(model,descr1,descr2,n_cpus = 1, refine= None):
+def calculate_functional_maps_chem(
+    model: Any,
+    descr1: np.ndarray,
+    descr2: np.ndarray,
+    config: FunctionalMapConfig | dict[str, Any] | int | None = None,
+    *,
+    n_cpus: int | None = None,
+    refine: str | None = None,
+) -> np.ndarray:
     """                                                                                                                                                                                
     Calculate functional maps and point to point maps with pyFM code (https://github.com/RobinMagnet/pyFM)                                                                                                                                        
                                                                                                                                                                                        
@@ -179,14 +196,8 @@ def calculate_functional_maps_chem(model,descr1,descr2,n_cpus = 1, refine= None)
         p2p21 : Point to point map 
     """  
 
-    logging.info("cpus used: {}".format(n_cpus)) 
-    
-    fit_params = {
-        'w_descr': 1e0,
-        'w_lap': 1e-2,
-        'w_dcomm': 1e-1,
-        'w_orient': 0
-    }
-    model.fit_othdescr(descr1,descr2,**fit_params, verbose=True)
+    fm_config = FunctionalMapConfig.from_value(config, n_cpus=n_cpus, refine=refine)
+    logger.info("cpus used: %s", fm_config.n_cpus)
+    model.fit_othdescr(descr1, descr2, **fm_config.fit_params(), verbose=fm_config.verbose)
 
     return model.FM

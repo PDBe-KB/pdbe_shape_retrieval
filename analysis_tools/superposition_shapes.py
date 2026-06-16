@@ -9,6 +9,9 @@ import trimesh
 import torch
 from pyFM import mesh
 
+
+logger = logging.getLogger(__name__)
+
 def read_vertices(file_mesh1,file_mesh2):
     mesh1 = trimesh.load_mesh(file_mesh1)
     mesh2 = trimesh.load_mesh(file_mesh2)
@@ -163,6 +166,7 @@ def compute_aligned_meshes(file_mesh1, file_mesh2, R, area_normalize=True, cente
     return mesh1_aligned, mesh2_aligned
 
 def main():
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
@@ -210,8 +214,9 @@ def main():
     matrix_B = np.transpose(matrix_B)
 
     R,t = optimal_rotation_translation(matrix_A,matrix_B)
-    print(t)
-    print(R)
+    logger.info("Translation vector: %s", t)
+    logger.info("Rotation matrix: %s", R)
+
 if __name__ == "__main__":
 
     main()

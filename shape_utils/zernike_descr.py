@@ -4,87 +4,92 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# convert pdb file to triangulation data and do 3dzd calculation
 
-import os
-import shutil
-import importlib.util  
-import importlib.util 
-import subprocess
-import os
+from __future__ import annotations
+
 import logging
+import shutil
+import subprocess
+from pathlib import Path
+
+from shape_utils.meshes import remove_until_vertex
+
+logger = logging.getLogger(__name__)
 
 
-def get_inv(obj_file,fileid,map3dz_binary, obj2grid_binary,output_dir):
-        """
-        Generates Zernike moments in .inv file from a 3D OBJ mesh file by converting it to a grid 
-        and applying 3D-Surface binary map3dz (Kihara's lab).
+def get_inv(
+    obj_file: str | Path,
+    fileid: str,
+    map3dz_binary: str | Path,
+    obj2grid_binary: str | Path,
+    output_dir: str | Path,
+) -> Path:
+    """
+    Generate a Zernike moments .inv file from a 3D OBJ mesh file.
 
-        Args:
+    The OBJ is copied into the output directory before header cleanup and binary
+    execution, so the original input mesh is not modified.
+    """
+    source_obj = Path(obj_file).expanduser()
+    output_path = Path(output_dir).expanduser()
+    output_path.mkdir(parents=True, exist_ok=True)
 
-        obj_file (str): Path to the input mesh OBJ file.         
-        fileid (str): Identifier used for naming output files.
-        map3dz_binary (str): Path to the `map3dz` binary executable.
-        obj2grid_binary (str): Path to the `obj2grid` binary executable.
-        output_dir (str): Path to directory where output files will be stored.
+    if not source_obj.is_file():
+        raise FileNotFoundError(f"OBJ file not found: {source_obj}")
 
-        Raises:
-        FileNotFoundError:
-            If the input OBJ file or binaries do not exist.
-        subprocess.CalledProcessError:
-            If `obj2grid` or `map3dz` fails.
-        OSError:
-            If renaming or deleting temporary files fails.
-        """
+    obj_output = _temporary_obj_path(source_obj, output_path, fileid)
+    grid_file = Path(f"{obj_output}.grid")
+    inv_file = Path(f"{grid_file}.inv")
+    final_inv = output_path / f"{fileid}.inv"
 
-        obj_output = os.path.join(output_dir,"{}.obj".format(fileid))
-        
+    shutil.copy2(source_obj, obj_output)
+    remove_until_vertex(str(obj_output))
 
-        # --- 1. COPY OBJ FILE -------------------------------------------------
-        if not os.path.abspath(obj_file) == os.path.abspath(obj_output):
-                shutil.copy(obj_file, obj_output)
-        else:
-                logging.info("Skipping copy: source and destination are identical.")
-        
+    try:
+        run_binary([str(obj2grid_binary), "-g", "64", str(obj_output)], "obj2grid")
 
-        # --- 2. RUN obj2grid --------------------------------------------------
-        subprocess.run(
-            [obj2grid_binary, "-g", "64", str(obj_output)],
-           check=True
+        run_binary([str(map3dz_binary), str(grid_file), "-c", "0.5"], "map2zernike")
+
+        inv_file.replace(final_inv)
+        return final_inv
+    finally:
+        _remove_if_exists(obj_output)
+        _remove_if_exists(grid_file)
+
+
+def run_binary(command: list[str], binary_name: str) -> subprocess.CompletedProcess[str]:
+    logger.info("Running %s: %s", binary_name, " ".join(command))
+    try:
+        return subprocess.run(
+            command,
+            check=True,
+            capture_output=True,
+            text=True,
         )
-        
-        # generate 3dzd
-        # --- 3. RUN map3dz ----------------------------------------------------
-        grid_file = os.path.join(output_dir,"{}.obj.grid".format(fileid))
-        
-        subprocess.run(
-            [map3dz_binary, f"{grid_file}", "-c", "0.5"],
-            check=True
-        )
-
-        # --- 4. RENAME .inv FILE ----------------------------------------------
-        
-        inv_file = grid_file+".inv"
-        final_inv = os.path.join(output_dir,"{}.inv".format(fileid))
-        os.rename(inv_file, final_inv)
-
-        # Delete .obj and .grid files from output folder
-        if not os.path.abspath(obj_file) == os.path.abspath(obj_output):
-                os.remove(obj_output)
-        os.remove(grid_file)                
+    except subprocess.CalledProcessError as exc:
+        stderr = (exc.stderr or "").strip()
+        stdout = (exc.stdout or "").strip()
+        if stderr:
+            logger.error("%s failed with stderr: %s", binary_name, stderr)
+        if stdout:
+            logger.debug("%s stdout before failure: %s", binary_name, stdout)
+        raise RuntimeError(
+            f"{binary_name} failed with exit code {exc.returncode}. stderr: {stderr or '<empty>'}"
+        ) from exc
+    except OSError as exc:
+        logger.error("Could not execute %s: %s", binary_name, exc)
+        raise RuntimeError(f"Could not execute {binary_name}: {exc}") from exc
 
 
+def _temporary_obj_path(source_obj: Path, output_dir: Path, fileid: str) -> Path:
+    candidate = output_dir / f"{fileid}.obj"
+    if candidate.resolve(strict=False) == source_obj.resolve(strict=False):
+        return output_dir / f"{fileid}_zernike_input.obj"
+    return candidate
 
 
-
-
-
+def _remove_if_exists(path: Path) -> None:
+    try:
+        path.unlink()
+    except FileNotFoundError:
+        return
