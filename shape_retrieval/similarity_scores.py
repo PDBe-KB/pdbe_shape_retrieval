@@ -1,17 +1,12 @@
 import logging
-import math
 import os
 from itertools import combinations_with_replacement
 
 import numpy as np
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
-from numpy.linalg import inv
-from torch import FloatTensor, LongTensor
+from torch import FloatTensor
 
-from shape_retrieval.models import NeuralNetworkModel, SimpleEuclideanModel
+from shape_retrieval.models import SimpleEuclideanModel
 
 
 def calculate_geodesic_norm_score(FM):

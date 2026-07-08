@@ -15,20 +15,20 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import numpy as np
 
-#from utils import pearsonr
+# from utils import pearsonr
+
 
 class SimpleEuclideanModel(nn.Module):
     def __init__(self):
         super(SimpleEuclideanModel, self).__init__()
 
-    def forward(self, inputs_1, inputs_2, output_dist = False):
+    def forward(self, inputs_1, inputs_2, output_dist=False):
         euclidean_dist = torch.norm(inputs_1 - inputs_2, 2, dim=-1).squeeze()
         if output_dist:
             return euclidean_dist
         return 1.0 / (1.0 + euclidean_dist)
+
 
 class NeuralNetworkModel(nn.Module):
     def __init__(self, input_dim, hidden_dims, fc_dims, extra_feature_dim):
@@ -45,10 +45,12 @@ class NeuralNetworkModel(nn.Module):
         self.nb_encoder_layers = len(hidden_dims)
 
         self.fc_layers = []
-        prev_dim = 2 * (input_dim + sum(hidden_dims)) + \
-                   2 * (1 + self.nb_encoder_layers) + \
-                   extra_feature_dim
-        #prev_dim = 4744 # 1444# 4744 #1444
+        prev_dim = (
+            2 * (input_dim + sum(hidden_dims))
+            + 2 * (1 + self.nb_encoder_layers)
+            + extra_feature_dim
+        )
+        # prev_dim = 4744 # 1444# 4744 #1444
         for fc_dim in fc_dims:
             self.fc_layers.append(nn.Linear(prev_dim, fc_dim))
             self.fc_layers.append(nn.BatchNorm1d(fc_dim))
@@ -60,14 +62,14 @@ class NeuralNetworkModel(nn.Module):
         self.last_fc = nn.Linear(prev_dim, 1)
         self.sigmoid = nn.Sigmoid()
 
-    def forward(self, inputs_1, inputs_2, extra_features, output_dist = False):
-        
+    def forward(self, inputs_1, inputs_2, extra_features, output_dist=False):
+
         outs_1 = []
         out = inputs_1
         outs_1.append(out)
         for layer in self.encoder:
             out = layer(out)
-            if 'ReLU' in str(layer):
+            if "ReLU" in str(layer):
                 outs_1.append(out)
 
         # Encoding inputs_2
@@ -76,14 +78,16 @@ class NeuralNetworkModel(nn.Module):
         outs_2.append(out)
         for layer in self.encoder:
             out = layer(out)
-            if 'ReLU' in str(layer):
+            if "ReLU" in str(layer):
                 outs_2.append(out)
 
         # Creating feature_vectors
         feature_vectors = []
         for i in range(self.nb_encoder_layers + 1):
             euclidean_dist = torch.norm(outs_1[i] - outs_2[i], 2, dim=-1, keepdim=True)
-            cosine_similarity = nn.CosineSimilarity(dim=-1, eps=1e-6)(outs_1[i], outs_2[i]).unsqueeze(1)
+            cosine_similarity = nn.CosineSimilarity(dim=-1, eps=1e-6)(
+                outs_1[i], outs_2[i]
+            ).unsqueeze(1)
             subtraction = torch.abs(outs_1[i] - outs_2[i])
             multiplication = outs_1[i] * outs_2[i]
             feature_vectors.append(euclidean_dist)
