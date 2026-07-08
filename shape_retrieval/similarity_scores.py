@@ -141,14 +141,11 @@ def predict_similarity_zernike(
 
     if cuda == "true" and torch.cuda.is_available():
         cuda = True
-        device_id = device_id
-        # device_id = args.device_id
     else:
         cuda = False
         device_id = torch.device("cpu")
 
     # model_type = 'neural_network'
-    atom_type = atom_type
     if model_type == "neural_network":
         logging.info("neural network of Kihara not yet implemented")
 
@@ -163,8 +160,8 @@ def predict_similarity_zernike(
     logging.info("pdb to compare : {} ".format(len(db_structures)))
 
     if len(db_structures) == 0:
-        logging.info("There are no structures to compare.")
-        exit()
+        logging.warning("There are no structures to compare.")
+        return
 
     database_dataset = read_dataset(input_dir, db_structures, atom_type)
     # query_pdb = db_structures[0]

@@ -22,10 +22,11 @@ def get_pairs(arr):
 
 
 def compute_scores_sym_matrix(scores_file, entries_file):
-    scores_file = open(scores_file)
-    scores_entries = scores_file.read().splitlines()
-    entries_file = open(entries_file).read().splitlines()
-    entry_labels = [s.split(" ")[0] for s in entries_file]
+    with open(scores_file) as scores_f:
+        scores_entries = scores_f.read().splitlines()
+    with open(entries_file) as entries_f:
+        entries_lines = entries_f.read().splitlines()
+    entry_labels = [s.split(" ")[0] for s in entries_lines]
 
     # Derive dimension of the score matrix from the list of points
     dim = len(entry_labels)
