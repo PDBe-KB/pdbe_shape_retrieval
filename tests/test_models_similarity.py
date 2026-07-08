@@ -6,8 +6,8 @@ import numpy as np
 import numpy.testing as npt
 import torch
 
-from shape_utils.models import NeuralNetworkModel, SimpleEuclideanModel
-from shape_utils.similarity_scores import (
+from shape_retrieval.models import NeuralNetworkModel, SimpleEuclideanModel
+from shape_retrieval.similarity_scores import (
     get_pairs,
     get_pairs_fast,
     pairs_to_features,
@@ -27,10 +27,14 @@ class TestModels(unittest.TestCase):
         similarities = model(inputs_1, inputs_2, output_dist=False)
 
         npt.assert_allclose(distances.detach().numpy(), np.array([5.0, 0.0]))
-        npt.assert_allclose(similarities.detach().numpy(), np.array([1 / 6, 1.0]), rtol=1e-6)
+        npt.assert_allclose(
+            similarities.detach().numpy(), np.array([1 / 6, 1.0]), rtol=1e-6
+        )
 
     def test_neural_network_model_forward_shapes(self):
-        model = NeuralNetworkModel(input_dim=2, hidden_dims=[3], fc_dims=[4], extra_feature_dim=1)
+        model = NeuralNetworkModel(
+            input_dim=2, hidden_dims=[3], fc_dims=[4], extra_feature_dim=1
+        )
         model.eval()
         inputs_1 = torch.ones((2, 2))
         inputs_2 = torch.zeros((2, 2))
@@ -48,7 +52,9 @@ class TestModels(unittest.TestCase):
 class TestSimilarityScoresIO(unittest.TestCase):
     def test_pair_helpers_and_read_inv(self):
         self.assertEqual(get_pairs(["a", "b"]), [("a", "a"), ("a", "b"), ("b", "b")])
-        self.assertEqual(get_pairs_fast(["a", "b"]), [("a", "a"), ("a", "b"), ("b", "b")])
+        self.assertEqual(
+            get_pairs_fast(["a", "b"]), [("a", "a"), ("a", "b"), ("b", "b")]
+        )
 
         with tempfile.TemporaryDirectory() as tmpdir:
             inv_file = Path(tmpdir) / "a.inv"

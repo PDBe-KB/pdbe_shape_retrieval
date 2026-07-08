@@ -1,0 +1,194 @@
+import logging
+import math
+import os
+from itertools import combinations_with_replacement
+
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
+from numpy.linalg import inv
+from torch import FloatTensor, LongTensor
+
+from shape_retrieval.models import NeuralNetworkModel, SimpleEuclideanModel
+
+
+def calculate_geodesic_norm_score(FM):
+    """
+    Calculates norm of correspondance matrix based on geodesic distance of eigenvalues spectrum
+
+    Returns norm as a similarity score
+
+    Args:
+        FM : Correspondance matrix of functional map
+    Returns:
+    """
+
+    eigenvalues_FM = np.linalg.eigvals(FM)
+    eps = 1e-12  # avoid log(0)
+    score = np.sqrt(np.sum(np.log(np.absolute(np.real(eigenvalues_FM)) + eps) ** 2))
+
+    return score
+
+
+def get_pairs_fast(arr):
+    """
+    Generate all unique pairs (including self-pairs) from a list or array.
+
+    Args:
+        arr (list or array-like): Input list or array of elements.
+
+    Returns:
+        list of tuples: A list containing tuples of all unique pairs. Each tuple
+                        is of the form `(a, b)` where `a` and `b` are elements
+                        from `arr`.
+
+    Example:
+        get_pairs_fast([1, 2, 3])
+        [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
+    """
+
+    return list(combinations_with_replacement(arr, 2))
+
+
+def get_pairs(arr):
+    pairs = []
+    for i in range(len(arr)):
+        for j in range(i, len(arr)):
+            if i <= j:
+                pairs.append((arr[i], arr[j]))
+    return pairs
+
+
+def read_inv(fn):
+    vectors = []
+    f = open(fn, "r")
+    for line in f:
+        vectors.append(float(line.strip()))
+    f.close()
+    return vectors[1::]
+
+
+def read_dataset(input_dir, db_structures, atom_type):
+    dataset = {}
+
+    for struct in db_structures:
+        if atom_type == "mainchain":
+            descriptors_file = os.path.join(input_dir, struct + "_cacn.inv")
+            _3dzd = read_inv(descriptors_file)
+            # _3dzd = read_inv(input_dir + struct + '_cacn.inv')
+        else:
+            descriptors_file = os.path.join(input_dir, struct + ".inv")
+            _3dzd = read_inv(descriptors_file)
+            # _3dzd = read_inv(input_dir + struct + '.inv')
+
+        # _vertex = read_ply(input_dir + struct + '.ply')
+        data = {}
+        data["_3dzd"] = _3dzd
+        # data['vertex_face'] = _vertex
+
+        dataset[struct] = data
+    return dataset
+
+
+def pairs_to_features(pairs, alpha_data, scope_data):
+
+    _3DZD_vectors_1, _3DZD_vectors_2 = [], []
+    # element_vertices_1, element_vertices_2 = [], []
+    # element_faces_1, element_faces_2 = [], []
+    for _pair in pairs:
+        id_0, id_1 = str(_pair[0]), str(_pair[1])
+
+        _3dzd_1 = list(alpha_data[id_0]["_3dzd"])
+        _3dzd_2 = list(scope_data[id_1]["_3dzd"])
+
+        _3DZD_vector_1 = np.asarray(_3dzd_1)
+        _3DZD_vector_1 = np.expand_dims(_3DZD_vector_1.squeeze(), axis=0)
+        _3DZD_vector_2 = np.asarray(_3dzd_2)
+        _3DZD_vector_2 = np.expand_dims(_3DZD_vector_2.squeeze(), axis=0)
+
+        # element_vertex_1, element_face_1 = tuple([int(x) for x in alpha_data[id_0]['vertex_face']])
+        # element_vertex_2, element_face_2 = tuple([int(x) for x in scope_data[id_1]['vertex_face']])
+
+        # Update
+        _3DZD_vectors_1.append(_3DZD_vector_1)
+        _3DZD_vectors_2.append(_3DZD_vector_2)
+        # element_vertices_1.append(element_vertex_1)
+        # element_faces_1.append(element_face_1)
+        # element_vertices_2.append(element_vertex_2)
+        # element_faces_2.append(element_face_2)
+    _3DZD_vectors_1 = np.array(_3DZD_vectors_1)
+    _3DZD_vectors_2 = np.array(_3DZD_vectors_2)
+    _3DZD_vectors_1 = FloatTensor(_3DZD_vectors_1).squeeze()
+    # element_vertices_1 = FloatTensor(element_vertices_1)
+    # element_faces_1 = FloatTensor(element_faces_1)
+
+    _3DZD_vectors_2 = FloatTensor(_3DZD_vectors_2).squeeze()
+    # element_vertices_2 = FloatTensor(element_vertices_2)
+    # element_faces_2 = FloatTensor(element_faces_2)
+
+    # vertices_diff = torch.abs(element_vertices_1 - element_vertices_2).unsqueeze(1)
+    # faces_diff = torch.abs(element_faces_1 - element_faces_2).unsqueeze(1)
+    # extra_features = torch.cat([vertices_diff, faces_diff], dim  = 1)
+
+    return _3DZD_vectors_1, _3DZD_vectors_2
+
+
+def predict_similarity_zernike(
+    input_dir,
+    output_dir,
+    model_type="simple_euclidean_model",
+    atom_type="fullatom",
+    cuda="true",
+    device_id="0",
+):
+
+    if cuda == "true" and torch.cuda.is_available():
+        cuda = True
+        device_id = device_id
+        # device_id = args.device_id
+    else:
+        cuda = False
+        device_id = torch.device("cpu")
+
+    # model_type = 'neural_network'
+    atom_type = atom_type
+    if model_type == "neural_network":
+        logging.info("neural network of Kihara not yet implemented")
+
+    elif model_type == "simple_euclidean_model":
+        logging.info("Simple Euclidean Model")
+        model = SimpleEuclideanModel()
+    model.eval()
+    db_structures = [
+        x for x in os.listdir(input_dir) if ".inv" in x and "_cacn" not in x
+    ]
+    db_structures = [x.split(".")[0] for x in db_structures]
+    logging.info("pdb to compare : {} ".format(len(db_structures)))
+
+    if len(db_structures) == 0:
+        logging.info("There are no structures to compare.")
+        exit()
+
+    database_dataset = read_dataset(input_dir, db_structures, atom_type)
+    # query_pdb = db_structures[0]
+    my_pairs = get_pairs_fast(db_structures)
+    # my_pairs = [(query_pdb, j) for j in db_structures]
+    inputs_1, inputs_2 = pairs_to_features(my_pairs, database_dataset, database_dataset)
+    if cuda:
+        inputs_1 = inputs_1.cuda(device_id)
+        inputs_2 = inputs_2.cuda(device_id)
+        # extra_features = extra_features.cuda(device_id)
+
+    if model_type == "simple_euclidean_model":
+        outputs = model(inputs_1, inputs_2, True)
+        outputs = outputs.squeeze().cpu().data.numpy().tolist()
+
+    output_scores_file = os.path.join(output_dir, atom_type + "_prediction.txt")
+    with open(output_scores_file, "w") as fh:
+        fh.write("Query\tTarget\tDis-similarity Probability\n")
+        # for i in range(0,len(outputs)):
+        for pair, score in zip(my_pairs, outputs):
+            fh.write(pair[0] + "\t" + pair[1] + "\t" + str(round(score, 3)) + "\n")
+            # fh.write(db_structures[0] + '\t' + db_structures[i] + '\t' +str(round(outputs[i],3)) + '\n')

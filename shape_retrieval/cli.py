@@ -10,7 +10,7 @@ import pstats
 from pathlib import Path
 from typing import Sequence
 
-from shape_utils.pipeline import PipelineConfig, run_pipeline
+from shape_retrieval.pipeline import PipelineConfig, run_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,9 @@ LOG_LEVEL_ENV_VAR = "SHAPE_RETRIEVAL_LOG_LEVEL"
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Calculate shape retrieval descriptors for protein surfaces.")
+    parser = argparse.ArgumentParser(
+        description="Calculate shape retrieval descriptors for protein surfaces."
+    )
     default_cpu_count = multiprocessing.cpu_count()
 
     parser.add_argument(
@@ -109,7 +111,11 @@ def build_parser() -> argparse.ArgumentParser:
         default=1,
         help="Subsample step to avoid using too many spectral descriptors.",
     )
-    parser.add_argument("--landmarks", default=None, help="Input indices of landmarks for spectral descriptors.")
+    parser.add_argument(
+        "--landmarks",
+        default=None,
+        help="Input indices of landmarks for spectral descriptors.",
+    )
     parser.add_argument(
         "--n-cpus",
         type=int,
@@ -134,6 +140,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     return parser
+
 
 def config_from_args(args: argparse.Namespace) -> PipelineConfig:
     return PipelineConfig(
@@ -221,7 +228,9 @@ def run_with_profiling(config: PipelineConfig) -> None:
     stats = pstats.Stats(profile, stream=stream).sort_stats("tottime")
     stats.print_stats()
 
-    output_path = Path(os.environ.get(PROFILE_OUTPUT_ENV_VAR, "shape_retrieval_profile.txt")).expanduser()
+    output_path = Path(
+        os.environ.get(PROFILE_OUTPUT_ENV_VAR, "shape_retrieval_profile.txt")
+    ).expanduser()
     output_path.write_text(stream.getvalue())
     logger.info("Wrote profile output to %s", output_path)
 

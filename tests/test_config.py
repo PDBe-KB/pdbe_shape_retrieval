@@ -2,7 +2,7 @@ import unittest
 
 from pydantic import ValidationError
 
-from shape_utils.config import DenseMeshConfig, FunctionalMapConfig
+from shape_retrieval.config import DenseMeshConfig, FunctionalMapConfig
 
 
 class TestFunctionalMapConfig(unittest.TestCase):

@@ -1,19 +1,19 @@
-import unittest
-import tempfile
 import os
-import numpy as np
-import pandas as pd
+import tempfile
+import unittest
 from unittest.mock import MagicMock
 
-from shape_utils.utils import (
+import numpy as np
+import pandas as pd
+
+from shape_retrieval.utils import (
+    find_minimum_distance_meshes,
     save_data_to_csv,
     save_list_to_csv,
-    find_minimum_distance_meshes,
 )
 
 
 class TestUtils(unittest.TestCase):
-
     # ------------------------------------------------------------
     # save_data_to_csv
     # ------------------------------------------------------------
@@ -88,5 +88,3 @@ class TestUtils(unittest.TestCase):
         result = find_minimum_distance_meshes(mesh1, mesh2)
 
         self.assertAlmostEqual(result, expected, places=6)
-
-

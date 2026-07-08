@@ -240,5 +240,3 @@
         5    0.000    0.000    0.000    0.000 {method 'items' of 'dict' objects}
         2    0.000    0.000    0.000    0.000 {method 'fileno' of '_io.BufferedReader' objects}
         1    0.000    0.000    0.000    0.000 /opt/homebrew/Cellar/python@3.10/3.10.19_1/Frameworks/Python.framework/Versions/3.10/lib/python3.10/argparse.py:1302(__init__)
-
-

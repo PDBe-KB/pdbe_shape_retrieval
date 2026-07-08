@@ -1,23 +1,43 @@
-FROM python:3.11-slim
+# Inspired from https://github.com/astral-sh/uv-docker-example/blob/5748835918ec293d547bbe0e42df34e140aca1eb/multistage.Dockerfile
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 
-ENV PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    MAP2ZERNIKE_SETUP_DIR=/usr/local/bin \
-    OBJ2GRID_PATH=/usr/local/bin/obj2grid \
-    PATH="/usr/local/bin:${PATH}"
+ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
+
+# Omit development dependencies
+ENV UV_NO_DEV=1
+
+ENV UV_PYTHON_DOWNLOADS=0
+
+ARG PIP_INDEX_URL
+ENV UV_DEFAULT_INDEX=$PIP_INDEX_URL
+ENV UV_EXTRA_INDEX_URL=https://pypi.org/simple
 
 WORKDIR /app
+COPY pyproject.toml uv.lock /app/
+RUN uv sync --locked --no-install-project --no-dev
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
+COPY shape_retrieval /app/shape_retrieval
+RUN uv tool install shape_retrieval
 
-RUN python -m pip install --upgrade pip uv
+FROM python:3.12-slim-bookworm
+LABEL maintainer="Sreenath Sasidharan Nair <sreenath@ebi.ac.uk>"
 
-COPY . /app
+RUN groupadd --system --gid 101 nonroot \
+    && useradd --system --gid 101 --uid 101 --create-home nonroot
 
-RUN install -m 0755 /app/bin/map2zernike /usr/local/bin/map2zernike \
-    && install -m 0755 /app/bin/obj2grid /usr/local/bin/obj2grid \
-    && uv pip install --system .
+COPY --from=builder --chown=nonroot:nonroot /app /app
 
-ENTRYPOINT ["shape_retrieval"]
+ENV PATH="/app/.venv/bin:$PATH"
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Disable core dumps
+RUN echo -e "* soft core 0\n* hard core 0" >> /etc/security/limits.conf
+
+USER nonroot
+
+# Set the working directory to /app
+WORKDIR /app
+
+CMD ["shape_retrieval"]
