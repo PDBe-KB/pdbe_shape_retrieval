@@ -12,7 +12,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from shape_utils.meshes import remove_until_vertex
+from shape_retrieval.meshes import remove_until_vertex
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +57,9 @@ def get_inv(
         _remove_if_exists(grid_file)
 
 
-def run_binary(command: list[str], binary_name: str) -> subprocess.CompletedProcess[str]:
+def run_binary(
+    command: list[str], binary_name: str
+) -> subprocess.CompletedProcess[str]:
     logger.info("Running %s: %s", binary_name, " ".join(command))
     try:
         return subprocess.run(

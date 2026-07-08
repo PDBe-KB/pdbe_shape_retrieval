@@ -1,10 +1,10 @@
+import subprocess
 import tempfile
 import unittest
-import subprocess
 from pathlib import Path
 from unittest.mock import call, patch
 
-from shape_utils.zernike_descr import get_inv, run_binary
+from shape_retrieval.zernike_descr import get_inv, run_binary
 
 
 class Test3DZernike(unittest.TestCase):
@@ -19,8 +19,12 @@ class Test3DZernike(unittest.TestCase):
                     Path(f"{command[1]}.inv").write_text("0\n1\n")
                 return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-            with patch("shape_utils.zernike_descr.subprocess.run", side_effect=fake_run) as mock_run:
-                inv_file = get_inv(source_obj, "entry", "/bin/map2zernike", "/bin/obj2grid", tmp_path)
+            with patch(
+                "shape_retrieval.zernike_descr.subprocess.run", side_effect=fake_run
+            ) as mock_run:
+                inv_file = get_inv(
+                    source_obj, "entry", "/bin/map2zernike", "/bin/obj2grid", tmp_path
+                )
 
             self.assertEqual(inv_file, tmp_path / "entry.inv")
             self.assertEqual(inv_file.read_text(), "0\n1\n")
@@ -36,7 +40,12 @@ class Test3DZernike(unittest.TestCase):
                         text=True,
                     ),
                     call(
-                        ["/bin/map2zernike", str(tmp_path / "entry.obj.grid"), "-c", "0.5"],
+                        [
+                            "/bin/map2zernike",
+                            str(tmp_path / "entry.obj.grid"),
+                            "-c",
+                            "0.5",
+                        ],
                         check=True,
                         capture_output=True,
                         text=True,
@@ -55,8 +64,12 @@ class Test3DZernike(unittest.TestCase):
                     Path(f"{command[1]}.inv").write_text("0\n1\n")
                 return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-            with patch("shape_utils.zernike_descr.subprocess.run", side_effect=fake_run) as mock_run:
-                get_inv(source_obj, "entry", "/bin/map2zernike", "/bin/obj2grid", tmp_path)
+            with patch(
+                "shape_retrieval.zernike_descr.subprocess.run", side_effect=fake_run
+            ) as mock_run:
+                get_inv(
+                    source_obj, "entry", "/bin/map2zernike", "/bin/obj2grid", tmp_path
+                )
 
             temporary_obj = tmp_path / "entry_zernike_input.obj"
             mock_run.assert_any_call(
@@ -76,11 +89,14 @@ class Test3DZernike(unittest.TestCase):
             stderr="specific failure",
         )
 
-        with patch("shape_utils.zernike_descr.subprocess.run", side_effect=error):
+        with patch("shape_retrieval.zernike_descr.subprocess.run", side_effect=error):
             with self.assertRaisesRegex(RuntimeError, "specific failure"):
                 run_binary(["/bin/tool"], "tool")
 
     def test_run_binary_wraps_os_error(self):
-        with patch("shape_utils.zernike_descr.subprocess.run", side_effect=OSError("missing executable")):
+        with patch(
+            "shape_retrieval.zernike_descr.subprocess.run",
+            side_effect=OSError("missing executable"),
+        ):
             with self.assertRaisesRegex(RuntimeError, "missing executable"):
                 run_binary(["/bin/tool"], "tool")

@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 import numpy as np
 import numpy.testing as npt
 
-from shape_utils.config import FunctionalMapConfig
-from shape_utils.functional_maps import (
+from shape_retrieval.config import FunctionalMapConfig
+from shape_retrieval.functional_maps import (
     calculate_functional_maps,
     calculate_functional_maps_chem,
     calculate_p2p_map,
@@ -53,12 +53,16 @@ class TestFunctionalMaps(unittest.TestCase):
         self.mock_model.icp_refine.assert_called_once_with(n_jobs=3, verbose=True)
 
     def test_calculate_functional_maps_zoomout_uses_config(self):
-        config = FunctionalMapConfig(refine="zoomout", zoomout_nit=5, zoomout_step=2, verbose=False)
+        config = FunctionalMapConfig(
+            refine="zoomout", zoomout_nit=5, zoomout_step=2, verbose=False
+        )
 
         calculate_functional_maps(self.mock_model, config)
 
         self.mock_model.change_FM_type.assert_called_once_with("classic")
-        self.mock_model.zoomout_refine.assert_called_once_with(nit=5, step=2, verbose=False)
+        self.mock_model.zoomout_refine.assert_called_once_with(
+            nit=5, step=2, verbose=False
+        )
 
     def test_calculate_p2p_map(self):
         result = calculate_p2p_map(self.mock_model, n_cpus=7)

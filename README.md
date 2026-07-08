@@ -1,8 +1,8 @@
-# Shape retrieval for protein surfaces 
+# Shape retrieval for protein surfaces
 
 ## Basic information
 
-This Python package calculates 3D shape descriptors for triangulated molecular surface meshes to analyse protein structure similarity. 
+This Python package calculates 3D shape descriptors for triangulated molecular surface meshes to analyse protein structure similarity.
 
 The code is based on [pyFM](https://github.com/RobinMagnet/pyFM) modules and [3D-Surfer 2.0](https://kiharalab.org/3d-surfer/) code and will:
 
@@ -10,85 +10,55 @@ The code is based on [pyFM](https://github.com/RobinMagnet/pyFM) modules and [3D
 - Calculate 3D Shape descriptors for two protein structures: Wave Kernel Signatures (WKS), Heat Kernel Signatures (HKS) and 3D Zernike descriptors (3DZD)
 - Compute functional maps and refine methods (Zoomout and ICP )
 - Compute similarity scores
-- Provides analysis tools to compute a score square matrix and perform agglomerative clustering 
+- Provides analysis tools to compute a score square matrix and perform agglomerative clustering
 
-To install the module ```shape_retrieval``` :
-```
-git clone https://github.com/PDBe-KB/pdbe_shape-retrieval
+To install the module `shape_retrieval`:
 
-cd pdbe_shape-retrieval
+```shell
+$ git clone https://github.com/PDBe-KB/pdbe_shape_retrieval
 
-python setup.py install
+$ cd pdbe_shape_retrieval
 
-``` 
-## Dependencies 
-
-This package requires the installation of [pyFM](https://github.com/RobinMagnet/pyFM) module for the calculation of spectral descriptors:
-
-```
-pip install pyfmaps
+$ uv sync
 ```
 
-For the calculation of Zernike Descriptors, binaries `obj2grid` and `map2zernike` from 3D-Surfer and obj2grid codes need to be provided. 
+### Development
+
+```shell
+$ uv sync --group test
+$ uv tool install pre-commit --with pre-commit-uv
+$ pre-commit
+$ pre-commit install
+$ pre-commit run --all-files
+```
+
+## Dependencies
+
+This package requires the installation of [pyFM](https://github.com/RobinMagnet/pyFM) module for the calculation of spectral descriptors.
+
+For the calculation of Zernike Descriptors, binaries `obj2grid` and `map2zernike` from 3D-Surfer and obj2grid codes need to be provided.
 The binaries are available [here](https://github.com/PDBe-KB/pdbe_shape-retrieval/blob/main/bin)
 
-To make your life easier when running the process, it is better to set two path environment variables for 3D-Surfer:
+To make your life easier when running the process, it is better to set the following environment variables for 3D-Surfer:
 
 An environment variable to the `obj2grid` binary:
 
-```
+```shell
 export OBJ2GRID_PATH="$PATH:your_path_to_obj2grid/obj2grid"
 ```
 
-A path to the `map2zernike binary` of 3D-Surfer :
+A path to the `map2zernike` binary of 3D-Surfer:
 
-```
+```shell
 export MAP2ZERNIKE_SETUP_DIR="/your_path_to_3DSurfer/bin/"
 ```
 
-
-Other dependencies can be installed with:
-
-```
-pip install -r requirements.txt
-```
-See  [requirements.txt](https://github.com/PDBe-KB/pdbe_shape-retrieval/blob/main/requirements.txt)
-
-
-For development: 
-
-**pre-commit usage**
-
-```
-pip install pre-commit
-pre-commit
-pre-commit install
-```
-
-
 ## Usage
 
-Follow the steps below to install the modules **pdbe_shape-retrieval** 
+To run `shape_retrieval` in the command line:
 
-```
-cd pdbe_shape-retrieval/
-
-python setup.py install .
-
-```
-
-To run the modules in the command line:
-
-**pdbe_shape-retrieval**: 
-
-```
-python pdbe_shape-retrieval/shape_utils/run.py [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_MESH_2  --entry_ids ENTRY_ID_1 ENTRY_ID_2  -o PATH_TO_OUTPUT_DIR
-```
-OR 
-
-```
-shape_retrieval [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_MESH_2 --entry_ids ENTRY_ID_1 ENTRY_ID_2 -o PATH_TO_OUTPUT_DIR
-
+```shell
+$ shape_retrieval [-h] --input_mesh1 INPUT_FILE_MESH_1 --input_mesh2 INPUT_FILE_MESH_2  --entry_ids ENTRY_ID_1 ENTRY_ID_2  -o PATH_TO_OUTPUT_DIR
 ```
 
 Required arguments are :
@@ -96,10 +66,9 @@ Required arguments are :
 ```
 --input_mesh1             :  Triangulated mesh for structure 1 (.obj)
 --input_mesh2             :  Triangulated mesh for structure 2 (.obj)
---entry_ids               :  Entry IDs for protein structures 
+--entry_ids               :  Entry IDs for protein structures
 --output (-o)             :  Output directory
 ```
-
 
 Other optional arguments:
 
@@ -117,7 +86,7 @@ To select the shape descriptor:
 
 Options for the calculation of spectral descriptors:
 ```
---neigvecs      : No. of eigenvalues/eigenvectors to process (>100). A minimum of neigvecs=100 will be used by default (recommended) 
+--neigvecs      : No. of eigenvalues/eigenvectors to process (>100). A minimum of neigvecs=100 will be used by default (recommended)
 --n_ev          : The least number of Laplacian eigenvalues to consider for the functional map.
 --ndescr        : No. of descriptors to process (WKS/HKS).
 --landmarks     : Input indices of landmarks
@@ -147,7 +116,7 @@ The process will output CSV files with the WKS/HKS descriptors for the two input
 *DESCR_TYPE_descr_ENTRY_ID_1.csv*
 *DESCR_TYPE_descr_ENTRY_ID_2.csv*
 
-where DESCR_TYPE is the selected descriptor (WKS) and ENTRY_ID is the entry id of the input structure. 
+where DESCR_TYPE is the selected descriptor (WKS) and ENTRY_ID is the entry id of the input structure.
 
 A vector of N descriptors is given for each vertex of the mesh, and therefore the No. of rows of the file is the no. of vertices of the mesh:
 
@@ -170,7 +139,7 @@ The process will output a CSV file with the correspondence matrix or functional 
 
 where ENTRY_ID_* is the entry ID for each input structure.
 
-The csv file contains NxN rows and columns with values of the transformation coefficients c_ij. N is the number of terms or Laplace-Beltrami functions used in the expansion in fuctional space. 
+The csv file contains NxN rows and columns with values of the transformation coefficients c_ij. N is the number of terms or Laplace-Beltrami functions used in the expansion in fuctional space.
 
 For example if N=4 the output file would look like this:
 ```
@@ -183,7 +152,7 @@ The process will output a CSV file with the point-to-point map from mesh2 to mes
 
 *ENTRY_ID_1_ENTRY_ID_2_p2p21.csv*
 
-In this output file the No. of rows N corresponds to the no. of vertices in Mesh 2 and each row displays the corresponding vertex index of Mesh 1. 
+In this output file the No. of rows N corresponds to the no. of vertices in Mesh 2 and each row displays the corresponding vertex index of Mesh 1.
 
 ```
 8

@@ -25,7 +25,14 @@ class TestClusteringHelpers(unittest.TestCase):
     def test_pair_helpers(self):
         entries = ["a", "b", "c"]
 
-        expected = [("a", "a"), ("a", "b"), ("a", "c"), ("b", "b"), ("b", "c"), ("c", "c")]
+        expected = [
+            ("a", "a"),
+            ("a", "b"),
+            ("a", "c"),
+            ("b", "b"),
+            ("b", "c"),
+            ("c", "c"),
+        ]
 
         self.assertEqual(get_pairs(entries), expected)
         self.assertEqual(get_pairs_fast(entries), expected)
@@ -55,7 +62,9 @@ class TestClusteringHelpers(unittest.TestCase):
             entries.write_text("a\nb\nc\n")
             scores.write_text("a b 2\na outside 99\n")
 
-            matrix, labels = compute_partial_scores_matrix_fast(scores, entries, fill_value=-1.0)
+            matrix, labels = compute_partial_scores_matrix_fast(
+                scores, entries, fill_value=-1.0
+            )
 
         expected = np.array([[-1.0, 2.0, -1.0], [2.0, -1.0, -1.0], [-1.0, -1.0, -1.0]])
         npt.assert_array_equal(matrix, expected)
@@ -91,7 +100,9 @@ class TestClusteringHelpers(unittest.TestCase):
             scores.write_text("a a 0\n")
 
             with self.assertRaises(ValueError):
-                compute_partial_scores_matrix_combined(scores, entries, normalize_spec="bad")
+                compute_partial_scores_matrix_combined(
+                    scores, entries, normalize_spec="bad"
+                )
 
     def test_linkage_and_cluster_helpers(self):
         data = np.array([[0.0], [0.1], [5.0], [5.2]])
@@ -113,7 +124,9 @@ class TestClusteringHelpers(unittest.TestCase):
         self.assertEqual(sorted(sum(clusters, [])), ["a", "b", "c", "d"])
 
     def test_find_optimal_num_clusters_accepts_explicit_k(self):
-        model = AgglomerativeClustering(n_clusters=2, compute_distances=True).fit(np.array([[0.0], [1.0], [5.0]]))
+        model = AgglomerativeClustering(n_clusters=2, compute_distances=True).fit(
+            np.array([[0.0], [1.0], [5.0]])
+        )
 
         self.assertEqual(find_optimal_num_clusters(model, np.eye(3), k=2), 2)
 

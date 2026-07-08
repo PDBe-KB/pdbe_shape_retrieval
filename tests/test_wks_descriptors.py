@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from shape_utils.spectral_descr import calculate_spectral_descriptors, distance_WKS
+from shape_retrieval.spectral_descr import calculate_spectral_descriptors, distance_WKS
+
 
 class TestDescriptorFunctions(unittest.TestCase):
-
     def setUp(self):
         # Mock model
         self.mock_model = MagicMock()
@@ -12,7 +12,7 @@ class TestDescriptorFunctions(unittest.TestCase):
         self.mock_model.descr2 = [[1.5, 2.5, 3.5]]
         self.landmarks = [0, 1, 2]
 
-    @patch("shape_utils.spectral_descr.functional.SpectralDescriptors")
+    @patch("shape_retrieval.spectral_descr.functional.SpectralDescriptors")
     def test_calculate_spectral_descriptors_calls_preprocess(self, mock_descriptors):
         descr_model = MagicMock()
         descr_model.descr = [[1.0, 2.0, 3.0]]

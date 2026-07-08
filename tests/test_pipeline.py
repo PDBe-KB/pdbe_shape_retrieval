@@ -3,7 +3,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from shape_utils.pipeline import PipelineConfig, resolve_executable, run_pipeline, validate_config
+from shape_retrieval.pipeline import (
+    PipelineConfig,
+    resolve_executable,
+    run_pipeline,
+    validate_config,
+)
 
 
 class TestPipelineValidation(unittest.TestCase):
@@ -15,7 +20,11 @@ class TestPipelineValidation(unittest.TestCase):
             mesh1.write_text("v 0 0 0\n")
             mesh2.write_text("OFF\n")
 
-            validate_config(PipelineConfig(mesh1=mesh1, mesh2=mesh2, entry_ids=("a", "b"), output=output))
+            validate_config(
+                PipelineConfig(
+                    mesh1=mesh1, mesh2=mesh2, entry_ids=("a", "b"), output=output
+                )
+            )
 
             self.assertTrue(output.is_dir())
 
@@ -26,7 +35,14 @@ class TestPipelineValidation(unittest.TestCase):
             mesh2.write_text("v 0 0 0\n")
 
             with self.assertRaises(FileNotFoundError):
-                validate_config(PipelineConfig(mesh1=mesh1, mesh2=mesh2, entry_ids=("a", "b"), output=Path(tmpdir)))
+                validate_config(
+                    PipelineConfig(
+                        mesh1=mesh1,
+                        mesh2=mesh2,
+                        entry_ids=("a", "b"),
+                        output=Path(tmpdir),
+                    )
+                )
 
     def test_validate_config_rejects_invalid_descriptor(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -37,7 +53,13 @@ class TestPipelineValidation(unittest.TestCase):
 
             with self.assertRaises(ValueError):
                 validate_config(
-                    PipelineConfig(mesh1=mesh1, mesh2=mesh2, entry_ids=("a", "b"), output=Path(tmpdir), descriptor="BAD")
+                    PipelineConfig(
+                        mesh1=mesh1,
+                        mesh2=mesh2,
+                        entry_ids=("a", "b"),
+                        output=Path(tmpdir),
+                        descriptor="BAD",
+                    )
                 )
 
     def test_validate_config_rejects_fix_mesh_dependent_flags(self):
@@ -69,11 +91,13 @@ class TestResolveExecutable(unittest.TestCase):
             self.assertEqual(resolve_executable(str(binary), "tool"), str(binary))
 
     def test_resolve_executable_uses_path_lookup(self):
-        with patch("shape_utils.pipeline.shutil.which", return_value="/usr/local/bin/tool"):
+        with patch(
+            "shape_retrieval.pipeline.shutil.which", return_value="/usr/local/bin/tool"
+        ):
             self.assertEqual(resolve_executable("tool", "tool"), "/usr/local/bin/tool")
 
     def test_resolve_executable_raises_when_missing(self):
-        with patch("shape_utils.pipeline.shutil.which", return_value=None):
+        with patch("shape_retrieval.pipeline.shutil.which", return_value=None):
             with self.assertRaises(FileNotFoundError):
                 resolve_executable("missing-tool", "missing-tool")
 
@@ -99,7 +123,9 @@ class TestRunPipelineDispatch(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             config = self._config(tmpdir, descriptor="WKS")
 
-            with patch("shape_utils.pipeline._run_spectral_descriptors") as mock_spectral:
+            with patch(
+                "shape_retrieval.pipeline._run_spectral_descriptors"
+            ) as mock_spectral:
                 run_pipeline(config)
 
         mock_spectral.assert_called_once_with(config, "WKS", None)
@@ -108,7 +134,9 @@ class TestRunPipelineDispatch(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             config = self._config(tmpdir, descriptor="3DZD")
 
-            with patch("shape_utils.pipeline._run_zernike_descriptors") as mock_zernike:
+            with patch(
+                "shape_retrieval.pipeline._run_zernike_descriptors"
+            ) as mock_zernike:
                 run_pipeline(config)
 
         mock_zernike.assert_called_once_with(config, None)
@@ -117,7 +145,9 @@ class TestRunPipelineDispatch(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             config = self._config(tmpdir, no_shape_retrieval=True)
 
-            with patch("shape_utils.pipeline._run_spectral_descriptors") as mock_spectral:
+            with patch(
+                "shape_retrieval.pipeline._run_spectral_descriptors"
+            ) as mock_spectral:
                 run_pipeline(config)
 
         mock_spectral.assert_not_called()
@@ -126,7 +156,9 @@ class TestRunPipelineDispatch(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             config = self._config(tmpdir, min_dist_mesh=True, no_shape_retrieval=True)
 
-            with patch("shape_utils.pipeline._calculate_minimum_distance") as mock_min_distance:
+            with patch(
+                "shape_retrieval.pipeline._calculate_minimum_distance"
+            ) as mock_min_distance:
                 run_pipeline(config)
 
         mock_min_distance.assert_called_once_with(config, None)
@@ -136,8 +168,12 @@ class TestRunPipelineDispatch(unittest.TestCase):
             config = self._config(tmpdir, fix_meshes=True)
             fixed_meshes = object()
 
-            with patch("shape_utils.pipeline._fix_meshes", return_value=fixed_meshes) as mock_fix_meshes:
-                with patch("shape_utils.pipeline._run_spectral_descriptors") as mock_spectral:
+            with patch(
+                "shape_retrieval.pipeline._fix_meshes", return_value=fixed_meshes
+            ) as mock_fix_meshes:
+                with patch(
+                    "shape_retrieval.pipeline._run_spectral_descriptors"
+                ) as mock_spectral:
                     run_pipeline(config)
 
         mock_fix_meshes.assert_called_once_with(config)

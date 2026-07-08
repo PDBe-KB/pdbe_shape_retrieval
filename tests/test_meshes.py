@@ -1,11 +1,19 @@
 import os
-import numpy as np
 import unittest
-from unittest.mock import MagicMock
-from shape_utils.meshes import  fix_mesh, reduce_resolution_mesh, reconstruct_mesh, compute_center_of_mass, compute_min_dist, compute_centers_dist, remove_until_vertex
-import pytest
-from unittest.mock import MagicMock, patch
 from tempfile import NamedTemporaryFile
+from unittest.mock import MagicMock, patch
+
+import numpy as np
+
+from shape_retrieval.meshes import (
+    compute_center_of_mass,
+    compute_centers_dist,
+    compute_min_dist,
+    fix_mesh,
+    reduce_resolution_mesh,
+    remove_until_vertex,
+)
+
 
 class MockMesh:
     def __init__(self):
@@ -21,6 +29,7 @@ class MockMesh:
 
     def vertex_number(self):
         return len(self._v)
+
 
 class MockMeshSet:
     def __init__(self):
@@ -55,12 +64,12 @@ class MockMeshSet:
 
 
 class TestMeshes(unittest.TestCase):
-    @patch("shape_utils.meshes.ml.MeshSet", return_value=MockMeshSet())
-    @patch("shape_utils.meshes.pymeshfix.MeshFix")
-    def test_fix_mesh_basic(self,mock_meshfix, mock_ms):
+    @patch("shape_retrieval.meshes.ml.MeshSet", return_value=MockMeshSet())
+    @patch("shape_retrieval.meshes.pymeshfix.MeshFix")
+    def test_fix_mesh_basic(self, mock_meshfix, mock_ms):
         mock_obj = MagicMock()
-        mock_obj.points = np.array([[0,0,0],[1,1,1]])
-        mock_obj.faces = np.array([[0,1,1]])
+        mock_obj.points = np.array([[0, 0, 0], [1, 1, 1]])
+        mock_obj.faces = np.array([[0, 1, 1]])
         mock_meshfix.return_value = mock_obj
 
         v, f = fix_mesh("fake.obj", resolution=0.5)
@@ -80,12 +89,9 @@ class TestMeshes(unittest.TestCase):
         center = compute_center_of_mass(mesh)
         assert np.allclose(center, np.array([0.5, 0.5, 0.5]))
 
-
-
-
-    @patch("shape_utils.meshes.trimesh.load_mesh")
-    @patch("shape_utils.meshes.KDTree")
-    def test_compute_min_dist(self,mock_kdtree, mock_load):
+    @patch("shape_retrieval.meshes.trimesh.load_mesh")
+    @patch("shape_retrieval.meshes.KDTree")
+    def test_compute_min_dist(self, mock_kdtree, mock_load):
         mesh1 = MagicMock()
         mesh1.vertices = np.array([[0, 0, 0]])
         mesh2 = MagicMock()
@@ -100,11 +106,8 @@ class TestMeshes(unittest.TestCase):
         d = compute_min_dist("a.obj", "b.obj")
         assert d == 1.0
 
-
-
-
-    @patch("shape_utils.meshes.trimesh.load_mesh")
-    def test_compute_centers_dist(self,mock_load):
+    @patch("shape_retrieval.meshes.trimesh.load_mesh")
+    def test_compute_centers_dist(self, mock_load):
         mesh1 = MagicMock()
         mesh1.center_mass = np.array([0, 0, 0])
         mesh2 = MagicMock()
@@ -115,15 +118,8 @@ class TestMeshes(unittest.TestCase):
         d = compute_centers_dist("a.obj", "b.obj")
         assert d == 5.0  # distance between (0,0,0) and (3,4,0)
 
-
-    
     def test_remove_until_vertex(self):
-        content = [
-            "junk line\n",
-            "! more junk\n",
-            "v 1 2 3\n",
-            "v 4 5 6\n"
-        ]
+        content = ["junk line\n", "! more junk\n", "v 1 2 3\n", "v 4 5 6\n"]
 
         with NamedTemporaryFile("w+", delete=False) as tmp:
             tmp.write("".join(content))

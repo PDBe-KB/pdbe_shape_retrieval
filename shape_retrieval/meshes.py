@@ -9,6 +9,7 @@ import pymeshfix
 import trimesh
 from scipy.spatial import KDTree
 
+
 def fix_mesh(
     mesh_file: str,
     resolution: float = 0.5,
@@ -29,7 +30,7 @@ def fix_mesh(
 
         resolution (int or float):
             Target fraction reduction (or simplification parameter) passed to
-            `reduce_resolution_mesh()` to collapse vertices. 
+            `reduce_resolution_mesh()` to collapse vertices.
 
         collapse_vertices (bool, optional):
             If True, the function collapses/simplifies the mesh after repairing it.
@@ -51,12 +52,12 @@ def fix_mesh(
         - MeshLab (pymeshlab) is used for optional reconstruction and resolution reduction.
         - The function does not write output to disk; it returns the processed arrays.
     """
-    
+
     ms = ml.MeshSet()
     ms.load_new_mesh(mesh_file)
     if reconstruct:
-        new_ms,v,f = reconstruct_mesh(ms)
-        ms=new_ms
+        new_ms, v, f = reconstruct_mesh(ms)
+        ms = new_ms
     m = ms.current_mesh()
     v = m.vertex_matrix()
     f = m.face_matrix()
@@ -64,12 +65,13 @@ def fix_mesh(
     meshfix.repair()
     if collapse_vertices:
         ms.add_mesh(ml.Mesh(meshfix.points, meshfix.faces))
-        v,f = reduce_resolution_mesh(ms, resolution)
+        v, f = reduce_resolution_mesh(ms, resolution)
     else:
         v = meshfix.points
         f = meshfix.faces
 
     return v, f
+
 
 def reduce_resolution_mesh(ms: Any, resolution: float) -> tuple[np.ndarray, np.ndarray]:
     """
@@ -88,7 +90,7 @@ def reduce_resolution_mesh(ms: Any, resolution: float) -> tuple[np.ndarray, np.n
             Fraction of the current vertex count used to determine the target
             number of faces. Typically:
              0 < resolution < 1  → reduce to a fraction of the original size
-           
+
     Returns:
         Tuple[np.ndarray, np.ndarray]:
             `(v, f)` where:
@@ -100,14 +102,19 @@ def reduce_resolution_mesh(ms: Any, resolution: float) -> tuple[np.ndarray, np.n
         - Normals, boundaries, and topology are preserved during simplification.
     """
     m = ms.current_mesh()
-    TARGET = int(resolution*m.vertex_number())
-    ms.apply_filter('meshing_decimation_quadric_edge_collapse',
-                    targetfacenum=TARGET, preservenormal=True,
-                    preserveboundary=True,preservetopology=True)
+    TARGET = int(resolution * m.vertex_number())
+    ms.apply_filter(
+        "meshing_decimation_quadric_edge_collapse",
+        targetfacenum=TARGET,
+        preservenormal=True,
+        preserveboundary=True,
+        preservetopology=True,
+    )
     m = ms.current_mesh()
     v = m.vertex_matrix()
     f = m.face_matrix()
-    return v,f
+    return v, f
+
 
 def reconstruct_mesh(ms: Any) -> tuple[Any, np.ndarray, np.ndarray]:
     """
@@ -131,37 +138,40 @@ def reconstruct_mesh(ms: Any) -> tuple[Any, np.ndarray, np.ndarray]:
         ValueError:
             If the MeshSet has no current mesh to reconstruct.
     """
-    ms.apply_filter('generate_surface_reconstruction_vcg')
+    ms.apply_filter("generate_surface_reconstruction_vcg")
     m = ms.current_mesh()
-    return ms, m.vertex_matrix(),m.face_matrix()
+    return ms, m.vertex_matrix(), m.face_matrix()
 
 
 def compute_center_of_mass(mesh: Any) -> np.ndarray:
     center = mesh.center_mass
     return center
+
+
 def compute_min_dist(mesh1_file: str, mesh2_file: str) -> float:
     """
     Compute minimum distance between two meshes
-    
+
     Args:
     mesh1_file:
         Path to the first mesh file to be processed. Supported formats are typically
         `.obj` and `.off`.
     mesh1_file:
         Path to the second mesh file to be processed. Supported formats are typically
-        `.obj` and `.off`.    
+        `.obj` and `.off`.
     """
-    mesh1=trimesh.load_mesh(mesh1_file)
+    mesh1 = trimesh.load_mesh(mesh1_file)
     mesh2 = trimesh.load_mesh(mesh2_file)
     # Get the vertices of each mesh
     vertices1 = mesh1.vertices
     vertices2 = mesh2.vertices
-    
+
     # Use a KDTree for efficient nearest neighbor search
     tree = KDTree(vertices2)
     distances, _ = tree.query(vertices1)
     # Return the minimum distance
     return float(np.min(distances))
+
 
 def compute_centers_dist(mesh1_file: str, mesh2_file: str) -> float:
     """
@@ -193,8 +203,8 @@ def compute_centers_dist(mesh1_file: str, mesh2_file: str) -> float:
     mesh2 = trimesh.load_mesh(mesh2_file)
 
     # Compute center of mass (volume-based if possible)
-    center1 = mesh1.center_mass 
-    center2 = mesh2.center_mass 
+    center1 = mesh1.center_mass
+    center2 = mesh2.center_mass
 
     # Calculate Euclidean distance between centers
     distance = np.linalg.norm(center1 - center2)
@@ -206,8 +216,8 @@ def remove_until_vertex(file_path: str) -> None:
     Remove all lines in a mesh file until the first vertex declaration.
 
     This function scans the file and discards all content before the first line
-    that begins with `'v''. It is primarily useful for cleaning corrupted or non-standard OBJ files 
-    that cannot be read for Zernike descriptors. 
+    that begins with `'v''. It is primarily useful for cleaning corrupted or non-standard OBJ files
+    that cannot be read for Zernike descriptors.
     Args:
         file_path (str):
             Path to the mesh file to be cleaned. The file is modified in place.
@@ -223,14 +233,16 @@ def remove_until_vertex(file_path: str) -> None:
             If the file contains no vertex lines starting with `'v'`.
     """
     path = Path(file_path)
-    with path.open('r') as file:
+    with path.open("r") as file:
         lines = file.readlines()
 
     # Find the index of the first line that starts with 'v' (ignoring leading whitespace)
-    start_index = next((i for i, line in enumerate(lines) if line.lstrip().startswith('v')), len(lines))
+    start_index = next(
+        (i for i, line in enumerate(lines) if line.lstrip().startswith("v")), len(lines)
+    )
 
     # Keep only lines starting from the first 'v' line
     lines = lines[start_index:]
 
-    with path.open('w') as file:
+    with path.open("w") as file:
         file.writelines(lines)

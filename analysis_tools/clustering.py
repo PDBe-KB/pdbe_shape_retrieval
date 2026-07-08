@@ -1,19 +1,16 @@
-import numpy as np
-import pandas as pd
-
-from scipy.linalg import norm
-from scipy.cluster.hierarchy import dendrogram
-from sklearn.cluster import AgglomerativeClustering
-from sklearn import cluster
-from scipy.cluster.hierarchy import dendrogram, from_mlab_linkage, cut_tree, leaves_list, set_link_color_palette, to_tree, fcluster
-from scipy.spatial.distance import squareform, pdist
-from sklearn.metrics import silhouette_samples
-import scipy.stats as st
 import itertools
 from itertools import combinations_with_replacement
 
+import numpy as np
+import pandas as pd
+from scipy.cluster.hierarchy import cut_tree, fcluster
+from scipy.spatial.distance import squareform
+from sklearn.metrics import silhouette_samples
+
+
 def get_pairs_fast(arr):
     return list(combinations_with_replacement(arr, 2))
+
 
 def get_pairs(arr):
     pairs = []
@@ -22,17 +19,20 @@ def get_pairs(arr):
             if i <= j:
                 pairs.append((arr[i], arr[j]))
     return pairs
+
+
 def compute_scores_sym_matrix(scores_file, entries_file):
-    scores_file=open(scores_file)
-    scores_entries = scores_file.read().splitlines()
-    entries_file = open(entries_file).read().splitlines()
-    entry_labels = [s.split(' ')[0] for s in entries_file]
-    
-    #Derive dimension of the score matrix from the list of points
+    with open(scores_file) as scores_f:
+        scores_entries = scores_f.read().splitlines()
+    with open(entries_file) as entries_f:
+        entries_lines = entries_f.read().splitlines()
+    entry_labels = [s.split(" ")[0] for s in entries_lines]
+
+    # Derive dimension of the score matrix from the list of points
     dim = len(entry_labels)
-    #Read list of elements and compute pairs 
+    # Read list of elements and compute pairs
     pairs_entries = get_pairs_fast(entry_labels)
-    
+
     axes_labels = []
     for label in entry_labels:
         axes_labels.append(label)
@@ -40,22 +40,20 @@ def compute_scores_sym_matrix(scores_file, entries_file):
     scores = []
 
     for j in pairs_entries:
-        j_inv = (j[1],j[0])
+        j_inv = (j[1], j[0])
         for line in scores_entries:
             p = line.split()
-            pair_score = (p[0],p[1])
-            score = p[2] 
-            if j==pair_score or j_inv==pair_score:
+            pair_score = (p[0], p[1])
+            score = p[2]
+            if j == pair_score or j_inv == pair_score:
                 scores.append(score)
     sym_matrix = np.zeros((dim, dim))
     row, col = np.triu_indices(dim)  # Upper triangular indices
     sym_matrix[row, col] = scores
     sym_matrix[col, row] = scores
-   
+
     return sym_matrix, axes_labels
 
-import numpy as np
-import itertools
 
 def compute_partial_scores_matrix_combined(
     scores_file,
@@ -63,7 +61,7 @@ def compute_partial_scores_matrix_combined(
     volumes_file=None,
     fill_value=0.0,
     w_vol=0.15,
-    normalize_spec="max",   # "max", "p95", or None
+    normalize_spec="max",  # "max", "p95", or None
 ):
     # Read entry labels
     with open(entries_file) as f:
@@ -112,9 +110,7 @@ def compute_partial_scores_matrix_combined(
         spec_scale = 1.0
 
     else:
-        raise ValueError(
-            "normalize_spec must be 'max', 'p95', or None"
-        )
+        raise ValueError("normalize_spec must be 'max', 'p95', or None")
 
     if spec_scale == 0:
         spec_scale = 1.0
@@ -137,7 +133,6 @@ def compute_partial_scores_matrix_combined(
 
     # Fill matrix
     for p1, p2 in itertools.combinations_with_replacement(entry_labels, 2):
-
         if (p1, p2) not in scores_dict:
             continue
 
@@ -148,7 +143,6 @@ def compute_partial_scores_matrix_combined(
 
         # Optional volume distance
         if volumes_file is not None:
-
             if p1 not in vol_dict or p2 not in vol_dict:
                 raise KeyError(f"Missing volume for {p1} or {p2}")
 
@@ -163,9 +157,7 @@ def compute_partial_scores_matrix_combined(
                 vol_dist = abs(v1 - v2) / denom
 
             # Combined dissimilarity
-            combined_dist = (
-                spec_dist*(1+w_vol * vol_dist)
-            )
+            combined_dist = spec_dist * (1 + w_vol * vol_dist)
 
         else:
             combined_dist = spec_dist
@@ -175,10 +167,11 @@ def compute_partial_scores_matrix_combined(
 
     return sym_matrix, entry_labels
 
+
 def compute_scores_sym_matrix_fast(scores_file, entries_file):
-    
+
     entries_file = open(entries_file).read().splitlines()
-    entry_labels = [s.split(' ')[0] for s in entries_file]
+    entry_labels = [s.split(" ")[0] for s in entries_file]
 
     dim = len(entry_labels)
     label_to_idx = {label: idx for idx, label in enumerate(entry_labels)}
@@ -199,7 +192,7 @@ def compute_scores_sym_matrix_fast(scores_file, entries_file):
     pairs_entries = get_pairs(entry_labels)
 
     # Fill the matrix using pairs
-    for (p1, p2) in pairs_entries:
+    for p1, p2 in pairs_entries:
         if (p1, p2) in scores_dict:
             i = label_to_idx[p1]
             j = label_to_idx[p2]
@@ -209,13 +202,14 @@ def compute_scores_sym_matrix_fast(scores_file, entries_file):
             # Optional: Handle missing pairs if needed (e.g., assign zero or NaN)
             pass
 
-    return sym_matrix, entry_labels    
+    return sym_matrix, entry_labels
+
 
 def compute_partial_scores_matrix_fast(scores_file, entries_file, fill_value=0.0):
     # Read entry labels (subset allowed)
     with open(entries_file) as f:
         entry_labels = [line.split()[0] for line in f]
-    
+
     dim = len(entry_labels)
     label_to_idx = {label: idx for idx, label in enumerate(entry_labels)}
 
@@ -245,6 +239,7 @@ def compute_partial_scores_matrix_fast(scores_file, entries_file, fill_value=0.0
 
     return sym_matrix, entry_labels
 
+
 def linkage_matrix(model):
     # Create linkage matrix and then plot the dendrogram
 
@@ -266,9 +261,10 @@ def linkage_matrix(model):
 
     return linkage_matrix
     # Plot the corresponding dendrogram
-    #dendrogram(linkage_matrix, **kwargs)
+    # dendrogram(linkage_matrix, **kwargs)
 
-def two_gap_diff_stat(model, max_k,dist):
+
+def two_gap_diff_stat(model, max_k, dist):
     clusters = linkage_matrix(model)
     dist = pd.DataFrame(dist)
     # cluster levels over from 1 to N-1 clusters
@@ -287,8 +283,7 @@ def two_gap_diff_stat(model, max_k,dist):
         for i in range(np.max(level.unique()) + 1):
             cluster = level.loc[level == i]
             # Based on correlation distance
-            cluster_dist = dist.loc[cluster.index,
-                                    cluster.index]  # get distance
+            cluster_dist = dist.loc[cluster.index, cluster.index]  # get distance
             cluster_pdist = squareform(cluster_dist, checks=False)
             if cluster_pdist.shape[0] != 0:
                 D = np.nan_to_num(cluster_pdist.mean())
@@ -310,7 +305,7 @@ def two_gap_diff_stat(model, max_k,dist):
     return k
 
 
-def std_silhouette_score(model, max_k,dist):
+def std_silhouette_score(model, max_k, dist):
     clusters = linkage_matrix(model)
     dist = pd.DataFrame(dist)
     # cluster levels over from 1 to N-1 clusters
@@ -339,39 +334,46 @@ def std_silhouette_score(model, max_k,dist):
     return k
 
 
-def find_optimal_num_clusters(model, dist, max_k=10, ktype="d",k=None):
+def find_optimal_num_clusters(model, dist, max_k=10, ktype="d", k=None):
     if k is None:
         if ktype == "s":
-            k = std_silhouette_score(model, max_k,dist)
+            k = std_silhouette_score(model, max_k, dist)
         else:
-            k = two_gap_diff_stat(model, max_k,dist)
+            k = two_gap_diff_stat(model, max_k, dist)
 
     return k
 
-def compute_clusters(sym_matrix,axes_labels,cluster,linkage_method="ward", threshold=None,no_clusters=None):
+
+def compute_clusters(
+    sym_matrix,
+    axes_labels,
+    cluster,
+    linkage_method="ward",
+    threshold=None,
+    no_clusters=None,
+):
     if linkage_method == "average":
         average_linkage_average = cluster.AgglomerativeClustering(
-        linkage=linkage_method,
-        metric = 'precomputed',
-        compute_distances = True,
-        compute_full_tree = True, 
-        distance_threshold = threshold,
-        n_clusters= no_clusters,
-    )
+            linkage=linkage_method,
+            metric="precomputed",
+            compute_distances=True,
+            compute_full_tree=True,
+            distance_threshold=threshold,
+            n_clusters=no_clusters,
+        )
     if linkage_method == "ward":
         average_linkage_average = cluster.AgglomerativeClustering(
-            linkage='ward',
-            compute_distances = True,
-            compute_full_tree = True, 
-            distance_threshold = threshold,
-            n_clusters= no_clusters,
+            linkage="ward",
+            compute_distances=True,
+            compute_full_tree=True,
+            distance_threshold=threshold,
+            n_clusters=no_clusters,
         )
-    
 
     clustering_av = average_linkage_average.fit(sym_matrix)
     k = clustering_av.n_clusters_
-    threshold_dist = average_linkage_average.distances_[-(k-1)]
-    
+    threshold_dist = average_linkage_average.distances_[-(k - 1)]
+
     k = clustering_av.n_clusters_
 
     link_matrix = linkage_matrix(clustering_av)
@@ -381,23 +383,24 @@ def compute_clusters(sym_matrix,axes_labels,cluster,linkage_method="ward", thres
         clusters[v].append(i)
 
     clusters_all = []
-    for i in range(1,len(clusters)+1):
+    for i in range(1, len(clusters) + 1):
         cluster_entries = []
         cluster = clusters[i]
         for j in cluster:
-            cluster_entries.append(axes_labels[j])  
+            cluster_entries.append(axes_labels[j])
         clusters_all.append(cluster_entries)
-    
-    return clusters_all,k,link_matrix,threshold_dist
+
+    return clusters_all, k, link_matrix, threshold_dist
+
 
 def compute_volumes_pockets(volumes_file, entries_cluster):
     volumes_file = open(volumes_file)
     volumes_pockets = volumes_file.read().splitlines()
     entry_labels = entries_cluster
-    
-    #Derive dimension of the score matrix from the list of points
-    dim = len(entry_labels)
-    
+
+    # Derive dimension of the score matrix from the list of points
+    # dim = len(entry_labels)
+
     axes_labels = []
     for label in entry_labels:
         axes_labels.append(label)
@@ -408,8 +411,8 @@ def compute_volumes_pockets(volumes_file, entries_cluster):
         for line in volumes_pockets:
             p = line.split()
             pocket_entry = p[0]
-            pocket_volume = p[1] 
-            if j==pocket_entry :
-                vol_pockets.append([pocket_entry,pocket_volume])   
+            pocket_volume = p[1]
+            if j == pocket_entry:
+                vol_pockets.append([pocket_entry, pocket_volume])
 
     return vol_pockets
